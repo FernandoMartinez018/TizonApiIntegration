@@ -1,0 +1,36 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# application-test.yml — Configuración para el perfil de tests
+#
+# Se activa automáticamente con @ActiveProfiles("test") en los tests.
+# Usa H2 en memoria en lugar de PostgreSQL para no necesitar una DB real.
+# ═══════════════════════════════════════════════════════════════════════════
+
+spring:
+  datasource:
+    url:      jdbc:h2:mem:tizon_test_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop   # Crea las tablas al arrancar y las borra al terminar
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: false
+
+  h2:
+    console:
+      enabled: false
+
+jwt:
+  secret: TestSecretKeyForJUnitTestsOnly32CharsMin!!
+  expiration-ms: 3600000   # 1 hora
+
+python:
+  service:
+    base-url: http://localhost:9999   # MockWebServer en tests
+    timeout-seconds: 5
+
+logging:
+  level:
+    com.tizon: DEBUG

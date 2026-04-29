@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: tizon-api
+
+  datasource:
+    url:      ${DB_URL:jdbc:postgresql://localhost:5432/tizon_db}
+    username: ${DB_USER:tizon_user}
+    password: ${DB_PASS:tizon_pass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false   # Evita el anti-patrón OSIV
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_batch_fetch_size: 25
+
+  # ── Jackson (serialización JSON) ───────────────────────────────────────
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+# ── Servidor ───────────────────────────────────────────────────────────────
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api         # Todos los endpoints bajo /api/...
+  compression:
+    enabled: true
+    mime-types: application/json
+
+# ── Actuator (health, info, métricas) ─────────────────────────────────────
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ── JWT ────────────────────────────────────────────────────────────────────
+jwt:
+  # IMPORTANTE: cambiar este secreto en producción.
+  # Debe tener al menos 32 caracteres para HMAC-SHA256.
+  secret:         ${JWT_SECRET:TombosTienenQuePararFerxxo454545}
+  expiration-ms:  ${JWT_EXPIRATION_MS:86400000}   # 24 horas
+
+# ── Servicio Python (Lambda / FastAPI) ─────────────────────────────────────
+python:
+  service:
+    base-url:        ${PYTHON_SERVICE_URL:http://localhost:8000}
+    timeout-seconds: ${PYTHON_TIMEOUT_SECONDS:30}
+
+## ── Logging ────────────────────────────────────────────────────────────────
+#logging:
+#  level:
+#    root:                          WARN
+#    com.tizon:                     INFO
+#    org.springframework.security:  WARN
+#    org.hibernate.SQL:             WARN
+#  pattern:
+#    console: "%d{yyyy-MM-dd HH:mm:ss} | %-5level | %-40logger{40} | %msg%n"
