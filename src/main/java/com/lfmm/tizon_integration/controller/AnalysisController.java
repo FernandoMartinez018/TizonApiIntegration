@@ -25,16 +25,10 @@ public class AnalysisController {
 
     @PostMapping("/frame")
     public ResponseEntity<AnalysisResult> analyzeFrame(
-            @Valid @RequestBody FrameRequest request
-//            ,@AuthenticationPrincipal UserDetails user
-    ) {
+            @Valid @RequestBody FrameRequest request,
+            @AuthenticationPrincipal UserDetails user) {
 
-
-        AnalysisResult result = analysisService.analyzeFrame(request
-                ,"Ferxxo"
-//                , user.getUsername()
-        );
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(analysisService.analyzeFrame(request, user.getUsername()));
     }
 
     @PostMapping("/sessions/start")
