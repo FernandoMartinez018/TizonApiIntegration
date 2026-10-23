@@ -42,6 +42,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Cargar UserDetails y registrar en el SecurityContext
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                // Un usuario deshabilitado pierde el acceso aunque su token siga vigente.
+                if (!userDetails.isEnabled()) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,

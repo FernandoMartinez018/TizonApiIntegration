@@ -19,14 +19,19 @@ class RequiredSecretsStartupTest {
             "ia.internal-token,           INTERNAL_API_TOKEN es obligatorio",
             "ia.base-url,                 IA_BASE_URL es obligatorio",
             "spring.datasource.password,  DB_PASS es obligatorio",
+            "tizon.admin.username,        define ADMIN_USERNAME y ADMIN_PASSWORD",
+            "tizon.admin.password=corta,  ADMIN_PASSWORD debe tener al menos 8 caracteres",
     })
     void noArrancaSinSecreto(String property, String expectedMessage) {
         String override = property.contains("=") ? property : property + "=";
+        // BD propia: la H2 compartida de las otras pruebas ya tiene un ADMIN creado.
+        String freshDb = "--spring.datasource.url=jdbc:h2:mem:" + java.util.UUID.randomUUID()
+                + ";MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH";
 
         // Argumentos de línea de comandos: tienen prioridad sobre application-test.yml.
         assertThatThrownBy(() -> new SpringApplicationBuilder(TizonIntegrationApplication.class)
                 .profiles("test")
-                .run("--" + override, "--server.port=0", "--spring.main.banner-mode=off")
+                .run("--" + override, freshDb, "--server.port=0", "--spring.main.banner-mode=off")
                 .close())
                 .hasStackTraceContaining(expectedMessage);
     }

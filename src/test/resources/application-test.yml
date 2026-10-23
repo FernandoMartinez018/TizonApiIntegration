@@ -24,6 +24,11 @@ jwt:
   secret: TestSecretKeyForJUnitTestsOnly32CharsMin!!
   expiration-ms: 3600000   # 1 hora
 
+tizon:
+  admin:
+    username: admin
+    password: admin-test-pass
+
 ia:
   base-url: http://localhost:9999   # IA simulada en tests
   timeout-seconds: 5

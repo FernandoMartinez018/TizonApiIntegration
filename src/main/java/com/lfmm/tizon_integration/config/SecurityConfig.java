@@ -58,7 +58,8 @@ public class SecurityConfig {
                     // El despacho a /error solo ocurre tras una petición que ya pasó la autorización.
                     auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                             .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll();
+                            .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
+                            .requestMatchers("/admin/**").hasRole("ADMIN");
                     if (apiDocsEnabled) auth.requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll();
                     auth.anyRequest().authenticated();
                 })

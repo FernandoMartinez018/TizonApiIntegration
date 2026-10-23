@@ -82,6 +82,10 @@ cors:
 
 # ── Reglas funcionales (GET /api/config) ───────────────────────────────────
 tizon:
+  # ADMIN inicial: se crea en el primer arranque si no existe ninguno (RF-03 CA1).
+  admin:
+    username: ${ADMIN_USERNAME:}
+    password: ${ADMIN_PASSWORD:}
   severity:
     warning-pct: 10
     critical-pct: 30

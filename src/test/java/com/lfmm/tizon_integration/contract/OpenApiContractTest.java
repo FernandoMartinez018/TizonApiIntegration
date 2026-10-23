@@ -34,10 +34,8 @@ class OpenApiContractTest {
     /** Rutas del contrato servidas por otros componentes (IA y Actuator), no por controladores. */
     private static final Set<String> NOT_CONTROLLERS = Set.of("GET /health", "POST /v1/analyze", "GET /actuator/health");
 
-    /** Rutas del contrato que llegan en F6 (usuarios y alertas). Se vacía al completarlas. */
-    private static final Set<String> PENDING = Set.of(
-            "POST /auth/register", "GET /alerts", "POST /alerts/{}/ack",
-            "GET /admin/users", "PATCH /admin/users/{}");
+    /** Rutas del contrato que llegan en F6-API-02 (alertas). Se vacía al completarlas. */
+    private static final Set<String> PENDING = Set.of("GET /alerts", "POST /alerts/{}/ack");
 
     @Autowired MockMvc mvc;
 

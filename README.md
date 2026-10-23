@@ -19,6 +19,7 @@ Los secretos **no tienen valor por defecto**: si faltan, la API no arranca y el 
 | `DB_PASS` | **Sí** | Contraseña de la base de datos |
 | `JWT_SECRET` | **Sí** | Al menos 32 bytes. Generar con `openssl rand -base64 48` |
 | `JWT_EXPIRATION_MS` | No | Vigencia del token. Por defecto `86400000` (24 h) |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | **Sí, si no existe ningún ADMIN** | Crean el ADMIN inicial en el primer arranque (contraseña ≥ 8 caracteres). Si faltan y no hay ADMIN, la API no arranca |
 | `IA_BASE_URL` | **Sí** | URL interna del servicio de IA, p. ej. `http://ia:8000` |
 | `IA_TIMEOUT_SECONDS` | No | Por defecto `10` |
 | `INTERNAL_API_TOKEN` | **Sí** | Secreto compartido con la IA (header `X-Internal-Token`) |
@@ -29,8 +30,14 @@ Los secretos **no tienen valor por defecto**: si faltan, la API no arranca y el 
 Los umbrales de severidad (10 % y 30 %), el mínimo de frames para alertar y el ritmo de envío están en
 `application.yaml` (`tizon.*`) y la app los obtiene de `GET /api/config`.
 
+## Usuarios y roles
+Los usuarios viven en la tabla `app_users` (contraseñas con BCrypt, coste 12). El registro crea cuentas
+`AGRICULTOR`; un `ADMIN` cambia roles (`TECNICO`, `ADMIN`) y habilitación en `/admin/users`. Un AGRICULTOR solo
+ve sus sesiones; TECNICO y ADMIN leen las de todos. Un usuario deshabilitado pierde el acceso aunque su token
+siga vigente. Tras 5 intentos fallidos en 5 minutos, el login de ese usuario queda bloqueado 5 minutos (429).
+
 ## Endpoints (contrato v2)
-`POST /auth/login`, `GET /auth/me`, `GET /config`, `POST|GET /sessions`, `GET /sessions/{id}`,
+`POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `GET /admin/users`, `PATCH /admin/users/{id}`, `GET /config`, `POST|GET /sessions`, `GET /sessions/{id}`,
 `POST /sessions/{id}/frames`, `POST /sessions/{id}/end` y `GET /actuator/health`. El contrato completo está en
 `contracts/tizon-api.yaml` (copia de la fuente de verdad de la carpeta raíz; se actualiza con
 `../contracts/sync-copies.sh`). Con el perfil `dev` (`SPRING_PROFILES_ACTIVE=dev`) se publica el OpenAPI
