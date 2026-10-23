@@ -43,3 +43,10 @@ docker build -t tizon-api .
 docker run --env-file ../deploy/.env -p 8080:8080 tizon-api
 ```
 La imagen no contiene secretos ni URLs de ambiente: todo se inyecta al ejecutar el contenedor.
+
+## CI/CD (GitHub Actions)
+`.github/workflows/ci.yml` corre en cada push y PR a `dev`, `qa` y `main`: `./mvnw -B verify` y gitleaks.
+En cada push a `qa` o `main` publica la imagen `ghcr.io/<owner>/tizon-api` con las etiquetas `:qa` o `:main`
+y `:sha-<commit>`. La EC2 la descarga por *pull* (`deploy/scripts/auto-update.sh`): GitHub nunca entra a la EC2.
+Si el paquete de GHCR es privado, la EC2 necesita un token de solo lectura (`read:packages`).
+
