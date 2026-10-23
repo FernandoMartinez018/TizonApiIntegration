@@ -8,6 +8,7 @@ import com.lfmm.tizon_integration.exception.ApiException;
 import com.lfmm.tizon_integration.model.ScanResult;
 import com.lfmm.tizon_integration.model.ScanSession;
 import com.lfmm.tizon_integration.model.ScanSession.SessionStatus;
+import com.lfmm.tizon_integration.repository.RecommendationRepository;
 import com.lfmm.tizon_integration.repository.ScanResultRepository;
 import com.lfmm.tizon_integration.repository.ScanSessionRepository;
 import com.lfmm.tizon_integration.security.Roles;
@@ -41,6 +42,7 @@ public class SessionService {
 
     private final ScanSessionRepository sessionRepo;
     private final ScanResultRepository resultRepo;
+    private final RecommendationRepository recommendationRepo;
     private final IaClient iaClient;
     private final TizonProperties props;
     private final ObjectMapper objectMapper;
@@ -63,7 +65,7 @@ public class SessionService {
         ScanSession session = sessionRepo.findById(sessionId)
                 .filter(s -> Roles.isStaff(user) || s.getUsername().equals(user.getUsername()))
                 .orElseThrow(ApiException::notFound);
-        return toSummary(session);
+        return toDetail(session);
     }
 
     @Transactional(readOnly = true)
@@ -107,7 +109,7 @@ public class SessionService {
         session.setEndedAt(Instant.now());
         log.info("Sesión finalizada session_id={} total_frames={} affected_frames={}",
                 session.getId(), session.getTotalFrames(), session.getAffectedFrames());
-        return toSummary(session);
+        return toDetail(session);
     }
 
     // ── Internos ──────────────────────────────────────────────────────────
@@ -175,11 +177,23 @@ public class SessionService {
         }
     }
 
+    /** Resumen para listas: sin recomendaciones. */
     private SessionSummary toSummary(ScanSession s) {
+        return summary(s, List.of());
+    }
+
+    /** Detalle y resumen final: con las recomendaciones de su severidad (RF-08 CA3). */
+    private SessionSummary toDetail(ScanSession s) {
+        List<RecommendationDto> recommendations = recommendationRepo.findBySeverityOrderBySortOrder(s.getSeverity())
+                .stream().map(r -> new RecommendationDto(r.getSeverity(), r.getText(), r.getSource())).toList();
+        return summary(s, recommendations);
+    }
+
+    private SessionSummary summary(ScanSession s, List<RecommendationDto> recommendations) {
         LocationDto location = s.getLocationLat() == null ? null
                 : new LocationDto(s.getLocationLat(), s.getLocationLon(), s.getLocationAccuracyM());
         return new SessionSummary(s.getId(), s.getUsername(), s.getStatus(), s.getStartedAt(),
-                s.getEndedAt(), location, s.getFieldName(), null, List.of(),
+                s.getEndedAt(), location, s.getFieldName(), null, recommendations,
                 SessionStatsCalculator.stats(s));
     }
 }
