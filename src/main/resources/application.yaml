@@ -6,26 +6,28 @@ spring:
     url:      ${DB_URL:jdbc:postgresql://localhost:5432/tizon_db}
     username: ${DB_USER:tizon_user}
     password: ${DB_PASS:}   # obligatorio: sin valor la API no arranca (RequiredDbPasswordCheck)
-    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 30000
       idle-timeout: 600000
 
+  # Esquema versionado con Flyway (db/migration); Hibernate solo valida (RNF-MAN-01).
+  flyway:
+    enabled: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     open-in-view: false   # Evita el anti-patrón OSIV
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         default_batch_fetch_size: 25
 
   # ── Jackson (serialización JSON) ───────────────────────────────────────
   jackson:
+    property-naming-strategy: SNAKE_CASE   # contrato: JSON en snake_case
     default-property-inclusion: non_null
     serialization:
       write-dates-as-timestamps: false
@@ -77,3 +79,18 @@ cors:
 #    org.hibernate.SQL:             WARN
 #  pattern:
 #    console: "%d{yyyy-MM-dd HH:mm:ss} | %-5level | %-40logger{40} | %msg%n"
+
+# ── Reglas funcionales (GET /api/config) ───────────────────────────────────
+tizon:
+  severity:
+    warning-pct: 10
+    critical-pct: 30
+  alert-threshold-pct: ${ALERT_THRESHOLD_PCT:30}
+  alert-min-frames: 5               # no se generan alertas con menos frames analizados
+  frame-interval-ms: 700            # pausa mínima sugerida entre frames
+  session-inactivity-minutes: 30    # sesión ACTIVE sin frames → CANCELLED
+
+# ── OpenAPI generado: solo en el perfil dev (application-dev.yaml) ─────────
+springdoc:
+  api-docs:
+    enabled: false

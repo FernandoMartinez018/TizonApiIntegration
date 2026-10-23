@@ -4,30 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
- * Entidad JPA que representa el resultado de análisis de un frame individual.
- *
- * <p>Por cada frame enviado por el móvil se crea un registro aquí,
- * asociado a su {@link ScanSession} padre.
- *
- * <p>Las probabilidades se almacenan como columnas separadas
- * para facilitar consultas de agregación (promedio de Tizón Tardío, etc.).
- * Las bounding boxes se guardan como JSON serializado para no
- * necesitar una tabla adicional.
- *
- * <p>Tabla en PostgreSQL: {@code scan_results}
+ * Resultado del análisis de un frame (DETECTED o NO_VEGETATION). Nunca guarda la imagen
+ * ni errores técnicos (RF-07). Tabla {@code scan_results} (Flyway V1__baseline.sql).
  */
 @Entity
-@Table(
-        name = "scan_results",
-        indexes = {
-                @Index(name = "idx_result_session_id", columnList = "session_id"),
-                @Index(name = "idx_result_analyzed_at", columnList = "analyzed_at")
-        }
-)
+@Table(name = "scan_results")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,59 +25,51 @@ public class ScanResult {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    /** Sesión de escaneo a la que pertenece este frame. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
     private ScanSession session;
 
-    // ── Resultado de clasificación ────────────────────────────────────────
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private FrameStatus status;
 
-    /** Clase predicha: Sano | Tizon Temprano | Tizon Tardio | Sin deteccion */
-    @Column(nullable = false, length = 50)
-    private String label;
+    /** Resultado principal; null si NO_VEGETATION. */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private ClassId label;
 
-    /** Confianza de la predicción dominante [0.0 – 1.0] */
-    @Column(nullable = false)
-    private float confidence;
+    private Double confidence;
 
-    // Probabilidades por clase (columnas separadas para consultas analíticas)
     @Column(name = "prob_sano")
-    private float probSano;
-
-    @Column(name = "prob_tizon_temprano")
-    private float probTizonTemprano;
+    private Double probSano;
 
     @Column(name = "prob_tizon_tardio")
-    private float probTizonTardio;
+    private Double probTizonTardio;
 
-    // ── Metadatos del frame ───────────────────────────────────────────────
+    /** Regiones analizadas, serializadas como JSON (lista de Region del contrato). */
+    @Column(name = "regions_json", nullable = false, columnDefinition = "TEXT")
+    private String regionsJson;
 
-    /**
-     * Lista de bounding boxes serializada como JSON.
-     * Ejemplo: [{"x":0.1,"y":0.2,"width":0.3,"height":0.4,"label":"Tizon Tardio",...}]
-     */
-    @Column(name = "bounding_boxes_json", columnDefinition = "TEXT")
-    private String boundingBoxesJson;
-
-    @Column(name = "is_vegetation")
-    private boolean isVegetation;
-
-    @Column(name = "frame_width")
+    @Column(name = "frame_width", nullable = false)
     private int frameWidth;
 
-    @Column(name = "frame_height")
+    @Column(name = "frame_height", nullable = false)
     private int frameHeight;
+
+    @Column(name = "model_version", nullable = false, length = 80)
+    private String modelVersion;
+
+    /** Tiempo total en Spring, incluida la IA. */
+    @Column(name = "latency_ms", nullable = false)
+    private int latencyMs;
+
+    @Column(name = "inference_ms", nullable = false)
+    private int inferenceMs;
+
+    @Column(name = "request_id", length = 80)
+    private String requestId;
 
     @CreationTimestamp
     @Column(name = "analyzed_at", nullable = false, updatable = false)
-    private LocalDateTime analyzedAt;
-
-    // ── Métodos de dominio ────────────────────────────────────────────────
-
-    /** True si este frame tiene tizón (temprano o tardío). */
-    public boolean isAffected() {
-        return label != null
-                && label.contains("Tizon")
-                && !label.equals("Sin deteccion");
-    }
+    private Instant analyzedAt;
 }

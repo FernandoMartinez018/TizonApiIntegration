@@ -30,10 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SecurityConfigTest {
 
     private static final String PROTECTED_ROUTES = """
-            POST, /analysis/frame
-            POST, /analysis/sessions/start
-            POST, /analysis/sessions/00000000-0000-0000-0000-000000000000/end
-            GET,  /analysis/sessions/history
+            POST, /sessions
+            GET,  /sessions
+            GET,  /sessions/00000000-0000-0000-0000-000000000000
+            POST, /sessions/00000000-0000-0000-0000-000000000000/frames
+            POST, /sessions/00000000-0000-0000-0000-000000000000/end
+            GET,  /config
+            GET,  /auth/me
             GET,  /actuator/info
             GET,  /actuator/metrics
             GET,  /ruta/inexistente
@@ -69,7 +72,7 @@ class SecurityConfigTest {
 
     @Test
     void tokenInvalidoResponde401() throws Exception {
-        mvc.perform(request(HttpMethod.GET, "/analysis/sessions/history")
+        mvc.perform(request(HttpMethod.GET, "/sessions")
                         .header("Authorization", "Bearer no.es.un.jwt"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHORIZED"));

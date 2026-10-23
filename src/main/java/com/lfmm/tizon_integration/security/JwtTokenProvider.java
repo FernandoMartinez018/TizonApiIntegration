@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 
 @Component
@@ -49,6 +50,10 @@ public class JwtTokenProvider {
             log.warn("Token JWT vacío o nulo.");
         }
         return false;
+    }
+
+    public Instant getExpiration(String token) {
+        return parseClaims(token).getExpiration().toInstant();
     }
 
     public String getUsernameFromToken(String token) {

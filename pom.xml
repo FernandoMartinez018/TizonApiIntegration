@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<jjwt.version>0.12.5</jjwt.version>
+		<springdoc.version>2.8.17</springdoc.version>
 	</properties>
 
 	<!-- ── Dependencias ─────────────────────────────────────────────────── -->
@@ -77,6 +78,23 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
+		<!-- Flyway — esquema versionado (RNF-MAN-01) -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+		</dependency>
+
+		<!-- OpenAPI generado (solo se expone en el perfil dev) -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+
 		<!-- PostgreSQL driver -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -121,6 +139,22 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- PostgreSQL real en pruebas (se omiten si no hay Docker) -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 
@@ -129,6 +163,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<!-- En algunos Windows, Java no puede crear el socket interno del Selector (NIO) en
+					     %TEMP% ("Unable to establish loopback connection"). Se usa target/; inocuo en Linux. -->
+					<argLine>"-Djdk.net.unixdomain.tmpdir=${project.build.directory}"</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

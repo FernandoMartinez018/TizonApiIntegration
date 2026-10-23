@@ -1,0 +1,4 @@
+# Perfil de desarrollo: expone el OpenAPI generado en /api/v3/api-docs (comparar con el contrato).
+springdoc:
+  api-docs:
+    enabled: true

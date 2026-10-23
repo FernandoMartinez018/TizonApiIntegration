@@ -33,6 +33,10 @@ public class SecurityConfig {
     @Value("${cors.allowed-origins:}")
     private List<String> allowedOrigins;
 
+    /** Solo en el perfil dev (application-dev.yaml). */
+    @Value("${springdoc.api-docs.enabled:false}")
+    private boolean apiDocsEnabled;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -50,13 +54,14 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler))
 
-                .authorizeHttpRequests(auth -> auth
-                        // El despacho a /error solo ocurre tras una petición que ya pasó la autorización.
-                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
-                        .anyRequest().authenticated()
-                )
+                .authorizeHttpRequests(auth -> {
+                    // El despacho a /error solo ocurre tras una petición que ya pasó la autorización.
+                    auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                            .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll();
+                    if (apiDocsEnabled) auth.requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll();
+                    auth.anyRequest().authenticated();
+                })
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

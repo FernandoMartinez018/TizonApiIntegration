@@ -1,7 +1,5 @@
 package com.lfmm.tizon_integration.dto;
 
-public record LoginResponse(
-        String token,
-        String username,
-        long expiresIn
-) {}
+import java.time.Instant;
+
+public record LoginResponse(String token, Instant expiresAt, UserResponse user) {}

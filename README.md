@@ -23,7 +23,23 @@ Los secretos **no tienen valor por defecto**: si faltan, la API no arranca y el 
 | `IA_TIMEOUT_SECONDS` | No | Por defecto `10` |
 | `INTERNAL_API_TOKEN` | **Sí** | Secreto compartido con la IA (header `X-Internal-Token`) |
 | `CORS_ALLOWED_ORIGINS` | No | Orígenes separados por comas. Vacío = CORS deshabilitado |
+| `ALERT_THRESHOLD_PCT` | No | % afectado que genera alerta al finalizar una sesión. Por defecto `30` |
 | `PORT` | No | Por defecto `8080`. Todas las rutas cuelgan de `/api` |
+
+Los umbrales de severidad (10 % y 30 %), el mínimo de frames para alertar y el ritmo de envío están en
+`application.yaml` (`tizon.*`) y la app los obtiene de `GET /api/config`.
+
+## Endpoints (contrato v2)
+`POST /auth/login`, `GET /auth/me`, `GET /config`, `POST|GET /sessions`, `GET /sessions/{id}`,
+`POST /sessions/{id}/frames`, `POST /sessions/{id}/end` y `GET /actuator/health`. El contrato completo está en
+`contracts/tizon-api.yaml` (copia de la fuente de verdad de la carpeta raíz; se actualiza con
+`../contracts/sync-copies.sh`). Con el perfil `dev` (`SPRING_PROFILES_ACTIVE=dev`) se publica el OpenAPI
+generado en `/api/v3/api-docs`, y `OpenApiContractTest` verifica que coincida con el contrato.
+
+## Base de datos
+El esquema lo crea **Flyway** (`src/main/resources/db/migration`) y Hibernate solo lo valida
+(`ddl-auto: validate`). Los frames no se guardan, solo los resultados (RNF-SEG-12). La retención de las
+sesiones es indefinida durante la fase académica.
 
 ## Ejecución local
 ```bash
@@ -35,7 +51,8 @@ export DB_PASS=... JWT_SECRET="$(openssl rand -base64 48)" IA_BASE_URL=http://lo
 ```bash
 ./mvnw -B verify      # compila y ejecuta las pruebas con el perfil "test" (H2 en memoria)
 ```
-Las pruebas usan `src/test/resources/application-test.yml`; no necesitan PostgreSQL ni la IA.
+Las pruebas usan `src/test/resources/application-test.yml` (H2 en modo PostgreSQL); no necesitan la IA.
+`PostgresSchemaTest` levanta un PostgreSQL 16 con Testcontainers y se omite si no hay Docker.
 
 ## Docker
 ```bash

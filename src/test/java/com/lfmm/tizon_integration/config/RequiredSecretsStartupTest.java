@@ -3,7 +3,6 @@ package com.lfmm.tizon_integration.config;
 import com.lfmm.tizon_integration.TizonIntegrationApplication;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,8 +26,7 @@ class RequiredSecretsStartupTest {
         // Argumentos de línea de comandos: tienen prioridad sobre application-test.yml.
         assertThatThrownBy(() -> new SpringApplicationBuilder(TizonIntegrationApplication.class)
                 .profiles("test")
-                .web(WebApplicationType.NONE)
-                .run("--" + override, "--spring.main.banner-mode=off")
+                .run("--" + override, "--server.port=0", "--spring.main.banner-mode=off")
                 .close())
                 .hasStackTraceContaining(expectedMessage);
     }
