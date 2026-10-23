@@ -9,7 +9,7 @@ spring:
   datasource:
     url:      jdbc:h2:mem:tizon_test_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
-    password:
+    password: test
     driver-class-name: org.h2.Driver
 
   jpa:
@@ -26,10 +26,10 @@ jwt:
   secret: TestSecretKeyForJUnitTestsOnly32CharsMin!!
   expiration-ms: 3600000   # 1 hora
 
-python:
-  service:
-    base-url: http://localhost:9999   # MockWebServer en tests
-    timeout-seconds: 5
+ia:
+  base-url: http://localhost:9999   # IA simulada en tests
+  timeout-seconds: 5
+  internal-token: test-internal-token
 
 logging:
   level:

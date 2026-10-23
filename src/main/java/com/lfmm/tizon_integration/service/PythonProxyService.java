@@ -4,7 +4,7 @@ import com.lfmm.tizon_integration.dto.PythonAnalyzeRequest;
 import com.lfmm.tizon_integration.dto.PythonAnalyzeResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import com.lfmm.tizon_integration.config.IaProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,9 +19,7 @@ import java.time.Duration;
 public class PythonProxyService {
 
     private final WebClient pythonWebClient;
-
-    @Value("${python.service.timeout-seconds:30}")
-    private int timeoutSeconds;
+    private final IaProperties ia;
 
     public PythonAnalyzeResponse analyze(String frameB64, String sessionId) {
         log.debug("Enviando frame a Python. sessionId={}", sessionId);
@@ -51,7 +49,7 @@ public class PythonProxyService {
                             }
                     )
                     .bodyToMono(PythonAnalyzeResponse.class)
-                    .timeout(Duration.ofSeconds(timeoutSeconds))
+                    .timeout(Duration.ofSeconds(ia.timeoutSeconds()))
                     .onErrorResume(ex -> {
                         // Ante cualquier error, retornar respuesta vacía en lugar de fallar
                         log.error("Error llamando a Python (fallback a vacío): {}", ex.getMessage());

@@ -3,7 +3,6 @@ package com.lfmm.tizon_integration.config;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -22,14 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebClientConfig {
 
-    @Value("${python.service.base-url}")
-    private String pythonBaseUrl;
-
-    @Value("${python.service.timeout-seconds:30}")
-    private int timeoutSeconds;
-
     @Bean
-    public WebClient pythonWebClient() {
+    public WebClient pythonWebClient(IaProperties ia) {
+        int timeoutSeconds = ia.timeoutSeconds();
         // Cliente HTTP Netty con timeouts a nivel de conexión
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10_000)  // 10s para conectar
@@ -40,10 +34,11 @@ public class WebClientConfig {
                 );
 
         return WebClient.builder()
-                .baseUrl(pythonBaseUrl)
+                .baseUrl(ia.baseUrl())
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-Internal-Token", ia.internalToken())
                 .codecs(config ->
                         // 10 MB de buffer para frames de imagen en Base64
                         config.defaultCodecs().maxInMemorySize(10 * 1024 * 1024)

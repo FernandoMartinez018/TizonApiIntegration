@@ -5,7 +5,7 @@ spring:
   datasource:
     url:      ${DB_URL:jdbc:postgresql://localhost:5432/tizon_db}
     username: ${DB_USER:tizon_user}
-    password: ${DB_PASS:tizon_pass}
+    password: ${DB_PASS:}   # obligatorio: sin valor la API no arranca (RequiredDbPasswordCheck)
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -51,17 +51,22 @@ management:
       show-details: when-authorized
 
 # ── JWT ────────────────────────────────────────────────────────────────────
+# Sin valor por defecto: JWT_SECRET (≥ 32 bytes) es obligatorio (JwtProperties).
 jwt:
-  # IMPORTANTE: cambiar este secreto en producción.
-  # Debe tener al menos 32 caracteres para HMAC-SHA256.
-  secret:         ${JWT_SECRET:TombosTienenQuePararFerxxo454545}
+  secret:         ${JWT_SECRET:}
   expiration-ms:  ${JWT_EXPIRATION_MS:86400000}   # 24 horas
 
-# ── Servicio Python (Lambda / FastAPI) ─────────────────────────────────────
-python:
-  service:
-    base-url:        ${PYTHON_SERVICE_URL:http://localhost:8000}
-    timeout-seconds: ${PYTHON_TIMEOUT_SECONDS:30}
+# ── Servicio de IA (FastAPI, red interna) ─────────────────────────────────
+# IA_BASE_URL e INTERNAL_API_TOKEN son obligatorios (IaProperties).
+ia:
+  base-url:        ${IA_BASE_URL:}
+  timeout-seconds: ${IA_TIMEOUT_SECONDS:10}
+  internal-token:  ${INTERNAL_API_TOKEN:}
+
+# ── CORS ───────────────────────────────────────────────────────────────────
+# Lista separada por comas. Vacío = CORS deshabilitado (la app nativa no lo usa).
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:}
 
 ## ── Logging ────────────────────────────────────────────────────────────────
 #logging:
