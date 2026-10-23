@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -110,6 +111,24 @@ public class SessionService {
         log.info("Sesión finalizada session_id={} total_frames={} affected_frames={}",
                 session.getId(), session.getTotalFrames(), session.getAffectedFrames());
         return toDetail(session);
+    }
+
+    /** RF-04 CA6 "Descartar": la sesión queda CANCELLED (no genera alerta). */
+    @Transactional
+    public SessionSummary cancel(String username, UUID sessionId) {
+        ScanSession session = requireActive(findOwned(username, sessionId));
+        session.setStatus(SessionStatus.CANCELLED);
+        session.setEndedAt(Instant.now());
+        log.info("Sesión descartada session_id={}", session.getId());
+        return toSummary(session);
+    }
+
+    /** Sesiones abandonadas: ACTIVE sin frames durante tizon.session-inactivity-minutes → CANCELLED. */
+    @Transactional
+    public int cancelInactive(Instant now) {
+        int cancelled = sessionRepo.cancelInactive(now.minus(Duration.ofMinutes(props.sessionInactivityMinutes())), now);
+        if (cancelled > 0) log.info("Sesiones abandonadas canceladas: {}", cancelled);
+        return cancelled;
     }
 
     // ── Internos ──────────────────────────────────────────────────────────

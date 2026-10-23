@@ -60,6 +60,11 @@ public class SessionController {
         return sessions.analyzeFrame(user.getUsername(), sessionId, request, MDC.get("request_id"));
     }
 
+    @PostMapping("/{sessionId}/cancel")
+    public SessionSummary cancel(@AuthenticationPrincipal UserDetails user, @PathVariable UUID sessionId) {
+        return sessions.cancel(user.getUsername(), sessionId);
+    }
+
     @PostMapping("/{sessionId}/end")
     public SessionSummary end(@AuthenticationPrincipal UserDetails user, @PathVariable UUID sessionId) {
         return sessions.end(user.getUsername(), sessionId);
