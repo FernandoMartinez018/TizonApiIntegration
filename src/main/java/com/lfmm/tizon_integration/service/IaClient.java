@@ -51,7 +51,8 @@ public class IaClient {
                 })
                 .bodyToMono(IaAnalyzeResponse.class)
                 // Un solo reintento y solo si no se pudo conectar (la IA no alcanzó a procesar nada).
-                .retryWhen(Retry.max(1).filter(IaClient::isConnectionRefused))
+                .retryWhen(Retry.max(1).filter(IaClient::isConnectionRefused)
+                        .onRetryExhaustedThrow((spec, signal) -> signal.failure()))
                 .timeout(Duration.ofSeconds(ia.timeoutSeconds()))
                 .onErrorMap(IaClient::isTimeout, ex -> new ApiException(
                         HttpStatus.GATEWAY_TIMEOUT, ErrorCode.IA_TIMEOUT,

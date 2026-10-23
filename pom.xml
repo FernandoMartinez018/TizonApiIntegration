@@ -139,6 +139,13 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- MockWebServer — IA simulada en las pruebas del cliente -->
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>mockwebserver</artifactId>
+			<version>4.12.0</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- PostgreSQL real en pruebas (se omiten si no hay Docker) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
