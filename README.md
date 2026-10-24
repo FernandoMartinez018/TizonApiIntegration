@@ -69,6 +69,9 @@ export DB_PASS=... JWT_SECRET="$(openssl rand -base64 48)" IA_BASE_URL=http://lo
 Las pruebas usan `src/test/resources/application-test.yml` (H2 en modo PostgreSQL); no necesitan la IA.
 `PostgresSchemaTest` levanta un PostgreSQL 16 con Testcontainers y se omite si no hay Docker.
 
+Cobertura con JaCoCo (RNF-PRU-02): el reporte queda en `target/site/jacoco/index.html`, y `verify` falla si los
+paquetes `service` o `security` bajan del 70 % de líneas cubiertas (24-oct: 95,5 % y 88,8 %).
+
 ## Docker
 ```bash
 docker build -t tizon-api .
