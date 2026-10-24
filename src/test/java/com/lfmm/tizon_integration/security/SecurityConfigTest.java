@@ -80,7 +80,9 @@ class SecurityConfigTest {
 
     @Test
     void rutasPublicasNoExigenToken() throws Exception {
-        mvc.perform(request(HttpMethod.GET, "/actuator/health")).andExpect(status().isOk());
+        // 200 o 503 según la IA (en esta prueba no hay IA); lo importante es que no exige token.
+        int health = mvc.perform(request(HttpMethod.GET, "/actuator/health")).andReturn().getResponse().getStatus();
+        assertThat(health).isIn(200, 503);
         // Cuerpo vacío: la validación responde 400, prueba de que pasó la capa de seguridad.
         mvc.perform(request(HttpMethod.POST, "/auth/login")
                         .contentType(MediaType.APPLICATION_JSON).content("{}"))

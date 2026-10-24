@@ -116,6 +116,7 @@ class IaClientIntegrationTest {
         RecordedRequest request = ia.takeRequest(1, TimeUnit.SECONDS);
         assertThat(request.getPath()).isEqualTo("/v1/analyze");
         assertThat(request.getHeader("X-Internal-Token")).isEqualTo("test-internal-token");
+        assertThat(request.getHeader("X-Request-Id")).as("se propaga el X-Request-Id de la app").isEqualTo("req-test-1");
         assertThat(request.getBody().readUtf8()).contains("\"frame_b64\"");
         assertThat(resultRepo.countBySessionId(sessionId)).isEqualTo(1);
     }
@@ -153,7 +154,8 @@ class IaClientIntegrationTest {
         closed.shutdown();
 
         IaProperties props = new IaProperties(url, 1, "x");
-        IaClient client = new IaClient(new WebClientConfig().iaWebClient(WebClient.builder(), props), props);
+        IaClient client = new IaClient(new WebClientConfig().iaWebClient(WebClient.builder(), props), props,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
 
         assertThatThrownBy(() -> client.analyze("A".repeat(200), "req"))
                 .isInstanceOfSatisfying(ApiException.class,

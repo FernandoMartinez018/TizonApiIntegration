@@ -43,6 +43,14 @@ siga vigente. Tras 5 intentos fallidos en 5 minutos, el login de ese usuario que
 `../contracts/sync-copies.sh`). Con el perfil `dev` (`SPRING_PROFILES_ACTIVE=dev`) se publica el OpenAPI
 generado en `/api/v3/api-docs`, y `OpenApiContractTest` verifica que coincida con el contrato.
 
+## Observabilidad
+- `X-Request-Id`: se usa el de la app (o se genera), va en el MDC, en la respuesta, en el cuerpo `Error` y se
+  reenvía a la IA, de modo que una petición se sigue en los logs de los tres servicios.
+- Logs JSON con `LOGGING_STRUCTURED_FORMAT_CONSOLE=logstash` (activado en `../deploy/docker-compose.yml`):
+  `request_id`, `session_id`, `status`, `latency_ms` e `inference_ms`. Nunca se registran tokens ni frames.
+- `/actuator/health` es compuesto (`db` + `ia`): DOWN (503) si la IA no responde o su modelo no cargó.
+- Métricas en `/actuator/metrics` (requiere token): `tizon.ia.latency` (timer) y `tizon.ia.errors` (por `code`).
+
 ## Base de datos
 El esquema lo crea **Flyway** (`src/main/resources/db/migration`) y Hibernate solo lo valida
 (`ddl-auto: validate`). Los frames no se guardan, solo los resultados (RNF-SEG-12). La retención de las

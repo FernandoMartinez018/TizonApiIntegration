@@ -6,6 +6,8 @@ import com.lfmm.tizon_integration.dto.IaAnalyzeRequest;
 import com.lfmm.tizon_integration.dto.IaAnalyzeResponse;
 import com.lfmm.tizon_integration.dto.IaHealth;
 import com.lfmm.tizon_integration.exception.ApiException;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,11 +35,27 @@ public class IaClient {
 
     private final WebClient iaWebClient;
     private final IaProperties ia;
+    private final MeterRegistry meterRegistry;
 
     /** Última versión de modelo informada por la IA (para GET /config). */
     private volatile String lastModelVersion;
 
+    /** Métricas (RNF-OBS-03): timer tizon.ia.latency y contador tizon.ia.errors por código. */
     public IaAnalyzeResponse analyze(String frameB64, String requestId) {
+        Timer.Sample sample = Timer.start(meterRegistry);
+        try {
+            IaAnalyzeResponse response = callAnalyze(frameB64, requestId);
+            lastModelVersion = response.modelVersion();
+            return response;
+        } catch (ApiException ex) {
+            meterRegistry.counter("tizon.ia.errors", "code", ex.getCode().name()).increment();
+            throw ex;
+        } finally {
+            sample.stop(meterRegistry.timer("tizon.ia.latency"));
+        }
+    }
+
+    private IaAnalyzeResponse callAnalyze(String frameB64, String requestId) {
         IaAnalyzeResponse response = iaWebClient.post()
                 .uri("/v1/analyze")
                 .headers(h -> { if (requestId != null) h.set("X-Request-Id", requestId); })
@@ -64,7 +82,6 @@ public class IaClient {
                 .block();
 
         if (response == null) throw unavailable();
-        lastModelVersion = response.modelVersion();
         return response;
     }
 

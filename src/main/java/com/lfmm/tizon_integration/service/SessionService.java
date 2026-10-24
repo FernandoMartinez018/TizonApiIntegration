@@ -159,8 +159,10 @@ public class SessionService {
         SessionStatsCalculator.apply(session, ia.status(), ia.label(), ia.confidence(), props.severity());
         session.setLastFrameAt(Instant.now());
 
-        log.info("Frame analizado session_id={} request_id={} status={} latency_ms={} inference_ms={}",
-                sessionId, requestId, ia.status(), latencyMs, ia.inferenceMs());
+        // Campos estructurados en el log JSON (RNF-OBS-02); request_id ya va en el MDC.
+        log.atInfo().addKeyValue("session_id", sessionId).addKeyValue("status", ia.status())
+                .addKeyValue("latency_ms", latencyMs).addKeyValue("inference_ms", ia.inferenceMs())
+                .log("Frame analizado");
 
         return new FrameAnalysis(result.getId(), sessionId, ia.status(), ia.label(), ia.confidence(),
                 ia.probabilities(), regions, ia.frameWidth(), ia.frameHeight(), ia.modelVersion(),
