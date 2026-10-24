@@ -30,6 +30,10 @@ Los secretos **no tienen valor por defecto**: si faltan, la API no arranca y el 
 Los umbrales de severidad (10 % y 30 %), el mínimo de frames para alertar y el ritmo de envío están en
 `application.yaml` (`tizon.*`) y la app los obtiene de `GET /api/config`.
 
+Clases (`ClassId`, en orden de severidad): `SANO`, `TIZON_TEMPRANO` y `TIZON_TARDIO`. Las dos de tizón cuentan como
+afectadas para el % afectado, la severidad y las alertas; `label_counts` las separa. Los frames `NOT_POTATO` (hojas de
+otras plantas, sin análisis de tizón) y `NO_VEGETATION` se guardan, pero no cuentan en el % afectado.
+
 ## Usuarios y roles
 Los usuarios viven en la tabla `app_users` (contraseñas con BCrypt, coste 12). El registro crea cuentas
 `AGRICULTOR`; un `ADMIN` cambia roles (`TECNICO`, `ADMIN`) y habilitación en `/admin/users`. Un AGRICULTOR solo
