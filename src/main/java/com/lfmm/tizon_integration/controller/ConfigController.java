@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Arrays;
 
 /** Clases, umbrales y ritmo de envío para la app: una sola fuente (RNF-MAN-03). */
 @RestController
@@ -23,7 +23,7 @@ public class ConfigController {
     @GetMapping("/config")
     public AppConfigResponse config() {
         return new AppConfigResponse(
-                List.of(new ClassConfig(ClassId.SANO, false), new ClassConfig(ClassId.TIZON_TARDIO, true)),
+                Arrays.stream(ClassId.values()).map(c -> new ClassConfig(c, c.affected())).toList(),
                 new SeverityThresholds(props.severity().warningPct(), props.severity().criticalPct()),
                 props.alertThresholdPct(),
                 props.frameIntervalMs(),

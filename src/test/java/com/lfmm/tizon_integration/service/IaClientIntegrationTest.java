@@ -122,6 +122,18 @@ class IaClientIntegrationTest {
     }
 
     @Test
+    void hojaDeOtraPlantaSeDeserializaYSePersiste() throws Exception {
+        ia.enqueue(new MockResponse().addHeader("Content-Type", "application/json").setBody("""
+                {"status":"NOT_POTATO","label":null,"confidence":null,"probabilities":null,"regions":[],
+                 "frame_width":640,"frame_height":480,"model_version":"mobilenetv2-test","inference_ms":90}"""));
+
+        sendFrame().andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("NOT_POTATO"))
+                .andExpect(jsonPath("$.session_stats.not_potato_frames").value(1));
+        assertThat(resultRepo.countBySessionId(sessionId)).isEqualTo(1);
+    }
+
+    @Test
     void ia400EsInvalidImage() throws Exception {
         ia.enqueue(new MockResponse().setResponseCode(400).setBody("{\"code\":\"INVALID_IMAGE\"}"));
         sendFrame().andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_IMAGE"));

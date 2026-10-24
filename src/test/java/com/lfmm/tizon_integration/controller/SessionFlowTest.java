@@ -53,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SessionFlowTest {
 
     private static final String FRAME = "{\"frame_b64\":\"" + "A".repeat(200) + "\"}";
-    private static final Probabilities TIZON = new Probabilities(0.1, 0.9);
+    private static final Probabilities TIZON = new Probabilities(0.1, null, 0.9);
     private static final IaAnalyzeResponse DETECTED = new IaAnalyzeResponse(FrameStatus.DETECTED, ClassId.TIZON_TARDIO,
             0.9, TIZON, List.of(new Region(0.1, 0.1, 0.5, 0.5, ClassId.TIZON_TARDIO, 0.9, TIZON)), 640, 480, "test-v1", 120);
 
@@ -125,6 +125,36 @@ class SessionFlowTest {
                 .andExpect(jsonPath("$.session_stats.no_vegetation_frames").value(1))
                 .andExpect(jsonPath("$.session_stats.analyzed_frames").value(0));
         assertThat(resultRepo.countBySessionId(id)).isEqualTo(1);
+    }
+
+    @Test
+    void hojaDeOtraPlantaSePersisteSinAnalisisDeTizon() throws Exception {
+        when(iaClient.analyze(anyString(), any())).thenReturn(new IaAnalyzeResponse(
+                FrameStatus.NOT_POTATO, null, null, null, List.of(), 640, 480, "test-v1", 50));
+        UUID id = start(ana);
+        frame(ana, id).andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("NOT_POTATO"))
+                .andExpect(jsonPath("$.label").doesNotExist())
+                .andExpect(jsonPath("$.session_stats.not_potato_frames").value(1))
+                .andExpect(jsonPath("$.session_stats.analyzed_frames").value(0));
+        assertThat(resultRepo.countBySessionId(id)).isEqualTo(1);
+    }
+
+    @Test
+    void tizonTempranoSeCuentaComoAfectadoYPorClase() throws Exception {
+        Probabilities early = new Probabilities(0.05, 0.88, 0.04);
+        when(iaClient.analyze(anyString(), any())).thenReturn(new IaAnalyzeResponse(FrameStatus.DETECTED,
+                ClassId.TIZON_TEMPRANO, 0.88, early, List.of(new Region(0.1, 0.1, 0.5, 0.5, ClassId.TIZON_TEMPRANO, 0.88,
+                early)), 640, 480, "test-v1", 80));
+        UUID id = start(ana);
+        frame(ana, id).andExpect(status().isOk())
+                .andExpect(jsonPath("$.label").value("TIZON_TEMPRANO"))
+                .andExpect(jsonPath("$.probabilities.TIZON_TEMPRANO").value(0.88))
+                .andExpect(jsonPath("$.session_stats.affected_frames").value(1))
+                .andExpect(jsonPath("$.session_stats.label_counts.TIZON_TEMPRANO").value(1))
+                .andExpect(jsonPath("$.session_stats.label_counts.TIZON_TARDIO").value(0))
+                .andExpect(jsonPath("$.session_stats.dominant_label").value("TIZON_TEMPRANO"));
+        assertThat(resultRepo.findAll()).anySatisfy(r -> assertThat(r.getProbTizonTemprano()).isEqualTo(0.88));
     }
 
     @Test

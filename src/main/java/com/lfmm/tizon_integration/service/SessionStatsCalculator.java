@@ -7,9 +7,13 @@ import com.lfmm.tizon_integration.model.FrameStatus;
 import com.lfmm.tizon_integration.model.ScanSession;
 import com.lfmm.tizon_integration.model.Severity;
 
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.Map;
+
 /**
  * Reglas de SessionStats del contrato, como funciones puras (sin Spring ni base de datos).
- * affection_pct usa solo los frames DETECTED como denominador.
+ * affection_pct usa solo los frames DETECTED como denominador; afectado = TIZON_TEMPRANO o TIZON_TARDIO.
  */
 public final class SessionStatsCalculator {
 
@@ -26,11 +30,22 @@ public final class SessionStatsCalculator {
         return Severity.CRITICAL;
     }
 
-    /** Clase más frecuente entre los DETECTED; en empate gana la más severa. */
-    public static ClassId dominantLabel(int affectedFrames, int analyzedFrames) {
-        if (analyzedFrames == 0) return null;
-        int healthy = analyzedFrames - affectedFrames;
-        return affectedFrames >= healthy ? ClassId.TIZON_TARDIO : ClassId.SANO;
+    /** Frames DETECTED por clase principal. */
+    public static Map<ClassId, Integer> labelCounts(ScanSession s) {
+        Map<ClassId, Integer> counts = new EnumMap<>(ClassId.class);
+        counts.put(ClassId.SANO, s.getAnalyzedFrames() - s.getEarlyBlightFrames() - s.getLateBlightFrames());
+        counts.put(ClassId.TIZON_TEMPRANO, s.getEarlyBlightFrames());
+        counts.put(ClassId.TIZON_TARDIO, s.getLateBlightFrames());
+        return counts;
+    }
+
+    /** Clase más frecuente entre los DETECTED; en empate gana la más severa (orden de ClassId). */
+    public static ClassId dominantLabel(Map<ClassId, Integer> counts) {
+        return counts.entrySet().stream()
+                .filter(e -> e.getValue() > 0)
+                .max(Map.Entry.<ClassId, Integer>comparingByValue().thenComparing(Map.Entry.comparingByKey(Comparator.naturalOrder())))
+                .map(Map.Entry::getKey)
+                .orElse(null);
     }
 
     /** Suma un frame ya persistido a los contadores de la sesión. */
@@ -40,14 +55,20 @@ public final class SessionStatsCalculator {
             s.setNoVegetationFrames(s.getNoVegetationFrames() + 1);
             return;
         }
+        if (status == FrameStatus.NOT_POTATO) {
+            s.setNotPotatoFrames(s.getNotPotatoFrames() + 1);
+            return;
+        }
         int analyzed = s.getAnalyzedFrames() + 1;
         if (confidence != null) {
             double prevAvg = s.getAvgConfidence() == null ? 0.0 : s.getAvgConfidence();
             s.setAvgConfidence((prevAvg * (analyzed - 1) + confidence) / analyzed);
         }
         s.setAnalyzedFrames(analyzed);
-        if (label == ClassId.TIZON_TARDIO) s.setAffectedFrames(s.getAffectedFrames() + 1);
-        s.setDominantLabel(dominantLabel(s.getAffectedFrames(), analyzed));
+        if (label == ClassId.TIZON_TEMPRANO) s.setEarlyBlightFrames(s.getEarlyBlightFrames() + 1);
+        if (label == ClassId.TIZON_TARDIO) s.setLateBlightFrames(s.getLateBlightFrames() + 1);
+        if (label != null && label.affected()) s.setAffectedFrames(s.getAffectedFrames() + 1);
+        s.setDominantLabel(dominantLabel(labelCounts(s)));
         s.setSeverity(severity(affectionPct(s.getAffectedFrames(), analyzed), t));
     }
 
@@ -57,9 +78,11 @@ public final class SessionStatsCalculator {
                 s.getAnalyzedFrames(),
                 s.getAffectedFrames(),
                 s.getNoVegetationFrames(),
+                s.getNotPotatoFrames(),
                 affectionPct(s.getAffectedFrames(), s.getAnalyzedFrames()),
                 s.getSeverity(),
                 s.getAvgConfidence(),
-                s.getDominantLabel());
+                s.getDominantLabel(),
+                labelCounts(s));
     }
 }

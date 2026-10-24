@@ -37,7 +37,7 @@ public class ScanSession {
 
     // ── Contadores (SessionStats del contrato) ────────────────────────────
 
-    /** Frames persistidos: DETECTED + NO_VEGETATION. */
+    /** Frames persistidos: DETECTED + NO_VEGETATION + NOT_POTATO. */
     @Column(name = "total_frames", nullable = false)
     @Builder.Default
     private int totalFrames = 0;
@@ -47,14 +47,27 @@ public class ScanSession {
     @Builder.Default
     private int analyzedFrames = 0;
 
-    /** Frames DETECTED con label TIZON_TARDIO. */
+    /** Frames DETECTED con una clase afectada (TIZON_TEMPRANO + TIZON_TARDIO). */
     @Column(name = "affected_frames", nullable = false)
     @Builder.Default
     private int affectedFrames = 0;
 
+    @Column(name = "early_blight_frames", nullable = false)
+    @Builder.Default
+    private int earlyBlightFrames = 0;
+
+    @Column(name = "late_blight_frames", nullable = false)
+    @Builder.Default
+    private int lateBlightFrames = 0;
+
     @Column(name = "no_vegetation_frames", nullable = false)
     @Builder.Default
     private int noVegetationFrames = 0;
+
+    /** Frames con hojas de otras plantas: no se analiza el tizón. */
+    @Column(name = "not_potato_frames", nullable = false)
+    @Builder.Default
+    private int notPotatoFrames = 0;
 
     /** Promedio de confianza solo sobre frames DETECTED; null si no hay. */
     @Column(name = "avg_confidence")

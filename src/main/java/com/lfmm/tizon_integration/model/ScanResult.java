@@ -33,7 +33,7 @@ public class ScanResult {
     @Column(nullable = false, length = 20)
     private FrameStatus status;
 
-    /** Resultado principal; null si NO_VEGETATION. */
+    /** Resultado principal; null si NO_VEGETATION o NOT_POTATO. */
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ClassId label;
@@ -42,6 +42,10 @@ public class ScanResult {
 
     @Column(name = "prob_sano")
     private Double probSano;
+
+    /** null con el modelo anterior de 2 clases. */
+    @Column(name = "prob_tizon_temprano")
+    private Double probTizonTemprano;
 
     @Column(name = "prob_tizon_tardio")
     private Double probTizonTardio;

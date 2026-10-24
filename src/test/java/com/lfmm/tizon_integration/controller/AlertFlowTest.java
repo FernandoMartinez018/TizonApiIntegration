@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AlertFlowTest {
 
     private static final String FRAME = "{\"frame_b64\":\"" + "A".repeat(200) + "\"}";
-    private static final Probabilities P = new Probabilities(0.1, 0.9);
+    private static final Probabilities P = new Probabilities(0.1, null, 0.9);
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;

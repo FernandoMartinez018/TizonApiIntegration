@@ -79,6 +79,40 @@ class SessionStatsCalculatorTest {
         assertThat(SessionStatsCalculator.stats(s).dominantLabel()).isEqualTo(ClassId.TIZON_TARDIO);
     }
 
+    @Test
+    void tizonTempranoCuentaComoAfectadoYSeCuentaAparte() {
+        ScanSession s = session();
+        frames(s, 2, 1, 0, 0.9);
+        for (int i = 0; i < 3; i++) SessionStatsCalculator.apply(s, FrameStatus.DETECTED, ClassId.TIZON_TEMPRANO, 0.9, T);
+        SessionStats stats = SessionStatsCalculator.stats(s);
+        assertThat(stats.affectedFrames()).isEqualTo(4);
+        assertThat(stats.affectionPct()).isCloseTo(66.67, within(0.01));
+        assertThat(stats.labelCounts()).containsExactly(
+                java.util.Map.entry(ClassId.SANO, 2), java.util.Map.entry(ClassId.TIZON_TEMPRANO, 3),
+                java.util.Map.entry(ClassId.TIZON_TARDIO, 1));
+        assertThat(stats.dominantLabel()).isEqualTo(ClassId.TIZON_TEMPRANO);
+    }
+
+    @Test
+    void empateEntreTizonesGanaElTardio() {
+        ScanSession s = session();
+        for (int i = 0; i < 2; i++) SessionStatsCalculator.apply(s, FrameStatus.DETECTED, ClassId.TIZON_TEMPRANO, 0.9, T);
+        frames(s, 0, 2, 0, 0.9);
+        assertThat(SessionStatsCalculator.stats(s).dominantLabel()).isEqualTo(ClassId.TIZON_TARDIO);
+    }
+
+    @Test
+    void hojasDeOtrasPlantasNoCuentanEnElDenominador() {
+        ScanSession s = session();
+        frames(s, 1, 0, 0, 0.9);
+        for (int i = 0; i < 3; i++) SessionStatsCalculator.apply(s, FrameStatus.NOT_POTATO, null, null, T);
+        SessionStats stats = SessionStatsCalculator.stats(s);
+        assertThat(stats.totalFrames()).isEqualTo(4);
+        assertThat(stats.notPotatoFrames()).isEqualTo(3);
+        assertThat(stats.analyzedFrames()).isEqualTo(1);
+        assertThat(stats.affectionPct()).isZero();
+    }
+
     @ParameterizedTest(name = "{0} % → {1}")
     @CsvSource({"0, NONE", "0.1, LOW", "10, LOW", "10.01, WARNING", "30, WARNING", "30.01, CRITICAL", "100, CRITICAL"})
     void severidadSegunUmbrales(double pct, Severity expected) {

@@ -148,6 +148,7 @@ public class SessionService {
                 .label(ia.label())
                 .confidence(ia.confidence())
                 .probSano(ia.probabilities() == null ? null : ia.probabilities().sano())
+                .probTizonTemprano(ia.probabilities() == null ? null : ia.probabilities().tizonTemprano())
                 .probTizonTardio(ia.probabilities() == null ? null : ia.probabilities().tizonTardio())
                 .regionsJson(toJson(regions))
                 .frameWidth(ia.frameWidth())
