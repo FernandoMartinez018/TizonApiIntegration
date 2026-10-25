@@ -37,6 +37,10 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -155,6 +159,9 @@ class SessionFlowTest {
                 .andExpect(jsonPath("$.session_stats.label_counts.TIZON_TARDIO").value(0))
                 .andExpect(jsonPath("$.session_stats.dominant_label").value("TIZON_TEMPRANO"));
         assertThat(resultRepo.findAll()).anySatisfy(r -> assertThat(r.getProbTizonTemprano()).isEqualTo(0.88));
+        as(ana, post("/sessions/" + id + "/end")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.recommendations.length()").value(5))
+                .andExpect(jsonPath("$.recommendations[0].disease").value("TIZON_TEMPRANO"));
     }
 
     @Test
@@ -174,8 +181,12 @@ class SessionFlowTest {
         as(ana, post("/sessions/" + id + "/end")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("COMPLETED"))
                 .andExpect(jsonPath("$.ended_at").isNotEmpty())
-                .andExpect(jsonPath("$.recommendations[0].text").value("Consulta a un técnico agrónomo"))
-                .andExpect(jsonPath("$.recommendations[0].source").isNotEmpty());
+                .andExpect(jsonPath("$.recommendations.length()").value(5))
+                .andExpect(jsonPath("$.recommendations[*].disease").value(everyItem(
+                        is("TIZON_TARDIO"))))
+                .andExpect(jsonPath("$.recommendations[0].text").value(startsWith(
+                        "Consulta a un ingeniero agrónomo")))
+                .andExpect(jsonPath("$.recommendations[0].source").value(containsString("ICA (2011)")));
         long sessionsBefore = sessionRepo.count();
 
         frame(ana, id).andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("SESSION_NOT_ACTIVE"));

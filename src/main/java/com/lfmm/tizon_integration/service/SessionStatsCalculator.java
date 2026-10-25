@@ -48,6 +48,13 @@ public final class SessionStatsCalculator {
                 .orElse(null);
     }
 
+    /** Enfermedad con más frames entre los afectados (en empate, tizón tardío); null si no hubo afectados. */
+    public static ClassId predominantDisease(ScanSession s) {
+        Map<ClassId, Integer> counts = labelCounts(s);
+        counts.remove(ClassId.SANO);
+        return dominantLabel(counts);
+    }
+
     /** Suma un frame ya persistido a los contadores de la sesión. */
     public static void apply(ScanSession s, FrameStatus status, ClassId label, Double confidence, Thresholds t) {
         s.setTotalFrames(s.getTotalFrames() + 1);

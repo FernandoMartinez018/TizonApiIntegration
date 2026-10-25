@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-/** Recomendación por severidad con su fuente. Sembrada por Flyway (V2__recommendations.sql). */
+/** Recomendación para una enfermedad, con su fuente. Sembrada por Flyway (V6__recommendations_by_disease.sql). */
 @Entity
 @Table(name = "recommendations")
 @Getter
@@ -16,7 +16,7 @@ public class Recommendation {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private Severity severity;
+    private ClassId disease;
 
     @Column(nullable = false, length = 500)
     private String text;

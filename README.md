@@ -60,6 +60,10 @@ El esquema lo crea **Flyway** (`src/main/resources/db/migration`) y Hibernate so
 (`ddl-auto: validate`). Los frames no se guardan, solo los resultados (RNF-SEG-12). La retención de las
 sesiones es indefinida durante la fase académica.
 
+Las recomendaciones del resumen salen de la tabla `recommendations` (`V6__recommendations_by_disease.sql`): son
+las de la enfermedad que predominó entre los frames afectados (en empate, tizón tardío), cada una con su fuente.
+Las referencias completas están en `docs/requerimientos/fuentes-recomendaciones.md` de la rama `sistema`.
+
 ## Ejecución local
 ```bash
 export DB_PASS=... JWT_SECRET="$(openssl rand -base64 48)" IA_BASE_URL=http://localhost:8000 INTERNAL_API_TOKEN=...

@@ -102,6 +102,21 @@ class SessionStatsCalculatorTest {
     }
 
     @Test
+    void enfermedadPredominanteSoloEntreLosAfectados() {
+        ScanSession s = session();
+        frames(s, 5, 0, 0, 0.9);
+        assertThat(SessionStatsCalculator.predominantDisease(s)).isNull();
+
+        frames(s, 0, 1, 0, 0.9);
+        for (int i = 0; i < 2; i++) SessionStatsCalculator.apply(s, FrameStatus.DETECTED, ClassId.TIZON_TEMPRANO, 0.9, T);
+        assertThat(SessionStatsCalculator.stats(s).dominantLabel()).isEqualTo(ClassId.SANO);
+        assertThat(SessionStatsCalculator.predominantDisease(s)).isEqualTo(ClassId.TIZON_TEMPRANO);
+
+        frames(s, 0, 1, 0, 0.9);
+        assertThat(SessionStatsCalculator.predominantDisease(s)).isEqualTo(ClassId.TIZON_TARDIO);
+    }
+
+    @Test
     void hojasDeOtrasPlantasNoCuentanEnElDenominador() {
         ScanSession s = session();
         frames(s, 1, 0, 0, 0.9);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lfmm.tizon_integration.config.TizonProperties;
 import com.lfmm.tizon_integration.dto.*;
 import com.lfmm.tizon_integration.exception.ApiException;
+import com.lfmm.tizon_integration.model.ClassId;
 import com.lfmm.tizon_integration.model.ScanResult;
 import com.lfmm.tizon_integration.model.ScanSession;
 import com.lfmm.tizon_integration.model.ScanSession.SessionStatus;
@@ -206,10 +207,12 @@ public class SessionService {
         return summary(s, List.of(), null);
     }
 
-    /** Detalle y resumen final: con las recomendaciones de su severidad (RF-08 CA3). */
+    /** Detalle y resumen final: con las recomendaciones de la enfermedad que predominó (RF-08 CA3, P-05). */
     private SessionSummary toDetail(ScanSession s) {
-        List<RecommendationDto> recommendations = recommendationRepo.findBySeverityOrderBySortOrder(s.getSeverity())
-                .stream().map(r -> new RecommendationDto(r.getSeverity(), r.getText(), r.getSource())).toList();
+        ClassId disease = SessionStatsCalculator.predominantDisease(s);
+        List<RecommendationDto> recommendations = disease == null ? List.of()
+                : recommendationRepo.findByDiseaseOrderBySortOrder(disease).stream()
+                        .map(r -> new RecommendationDto(r.getDisease(), r.getText(), r.getSource())).toList();
         return summary(s, recommendations, alertService.alertIdFor(s.getId()).orElse(null));
     }
 
