@@ -1,0 +1,22 @@
+F5-MOB-01 — APK release firmada (verificación del 2026-10-24)
+
+Compilación (TizonMovile, rama dev, commit 3fe016d):
+  scripts/gradlew-docker.sh :composeApp:assembleRelease -Ptizon.apiBaseUrl=https://ejemplo.invalid/api/
+  con TIZON_KEYSTORE_PATH, TIZON_KEYSTORE_PASSWORD, TIZON_KEY_ALIAS y TIZON_KEY_PASSWORD.
+
+Keystore: DE PRUEBA y desechable (PKCS12, RSA 2048, 30 días), generado en composeApp/build/ (fuera de git)
+solo para verificar el flujo. NO es el keystore de distribución (D-05) y esta APK no se distribuye.
+
+Salida de scripts/apk-sha256.sh composeApp/build/outputs/apk/release/TizonMovile-1.1.0-release.apk
+(apksigner verify --print-certs; un error de firma habría terminado con código distinto de 0):
+  Signer #1 certificate DN: CN=Prueba desechable F5-MOB-01, O=Tizon
+  Signer #1 certificate SHA-256 digest: 1572211fb6c7325b8be7fb6964b3dc81733c1477e5f024ee815a2383af89bccb
+  246d6f5c0b5863e13b8cdae5402139c196931ff66770eb94e50d7fbca1f6e447  composeApp/build/outputs/apk/release/TizonMovile-1.1.0-release.apk
+
+Tamaño: 3.095.905 bytes con R8 e isShrinkResources (la APK debug pesa 25.794.598 bytes).
+R8 (mapping.txt): conservan su nombre los modelos del contrato (data.model.*, con sus $$serializer y Companion),
+las rutas de navegación (*Route, *Tab) y AlertsWorker.
+Sin dispositivo no se probó la APK release en ejecución: queda como DISP-99 en guion-prueba-dispositivo.md.
+
+Pendiente para la entrega: compilar con el keystore real del usuario y la URL de la EC2, y registrar el SHA-256
+del certificado y del archivo TizonMovile-1.1.0-release.apk (10-pendientes.md).

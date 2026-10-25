@@ -1,0 +1,11 @@
+[Unit]
+Description=Tizón: actualiza ia y api desde GHCR (rollback si falla el health)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/opt/tizon/deploy
+ExecStart=/opt/tizon/deploy/scripts/auto-update.sh

@@ -1,0 +1,107 @@
+# Sistema completo Tizón Tardío (F5-RAÍZ-01): db, ia, api y caddy (perfil "tls").
+#
+# Local (construye desde los repos hermanos):
+#   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up --build
+# EC2 (imágenes publicadas por GitHub Actions en GHCR; ver deploy/README.md):
+#   COMPOSE_PROFILES=tls en .env → docker compose pull && docker compose up -d
+#
+# Solo caddy publica puertos a Internet (80/443). La API se publica en 127.0.0.1 para el emulador
+# y los scripts del host; la IA y PostgreSQL viven en una red interna sin salida a Internet.
+
+name: tizon
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Falta POSTGRES_DB en deploy/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?Falta POSTGRES_USER en deploy/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en deploy/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ia:
+    image: ${IMAGE_REGISTRY:-ghcr.io/fernandomartinez018}/tizon-ia:${IMAGE_TAG:-main}
+    build: ../TizonDetectionModel
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?Falta INTERNAL_API_TOKEN en deploy/.env}
+      MODEL_PATH: /models/${MODEL_FILE:-modelo_tizon_4c.keras}
+      MODEL_META_PATH: /models/model_meta.json
+    volumes:
+      - ./models:/models:ro          # .h5 + model_meta.json; actualizar = reemplazar y reiniciar (RNF-MAN-02)
+    networks: [internal]
+    mem_limit: 2g
+    # HEALTHCHECK de la imagen: sano solo si el modelo cargó.
+
+  api:
+    image: ${IMAGE_REGISTRY:-ghcr.io/fernandomartinez018}/tizon-api:${IMAGE_TAG:-main}
+    build: ../TizonApiIntegration
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      ia:
+        condition: service_started   # la API arranca aunque la IA esté caída (health DOWN, 502 por frame)
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASS: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET en deploy/.env}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      IA_BASE_URL: http://ia:8000
+      IA_TIMEOUT_SECONDS: ${IA_TIMEOUT_SECONDS:-10}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN}
+      ALERT_THRESHOLD_PCT: ${ALERT_THRESHOLD_PCT:-30}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      JAVA_OPTS: -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+      LOGGING_STRUCTURED_FORMAT_CONSOLE: logstash   # logs JSON con request_id (RNF-OBS-02)
+    ports:
+      - "${API_BIND:-127.0.0.1}:${API_PORT:-8080}:8080"
+    networks: [internal, public]
+    mem_limit: 1g
+    # HEALTHCHECK de la imagen: /api/actuator/health
+
+  caddy:
+    image: caddy:2
+    profiles: [tls]
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?Falta PUBLIC_HOST en deploy/.env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [public]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  public: {}
+  internal:
+    internal: true   # sin salida a Internet ni puertos publicables
+
+volumes:
+  pgdata: {}
+  caddy_data: {}
+  caddy_config: {}

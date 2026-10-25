@@ -1,0 +1,5 @@
+# Los scripts y servicios de deploy/ corren en Linux (EC2): siempre con LF.
+*.sh text eol=lf
+deploy/scripts/systemd/* text eol=lf
+deploy/Caddyfile text eol=lf
+deploy/scripts/frame-prueba.b64 text eol=lf

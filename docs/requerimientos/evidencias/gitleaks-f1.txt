@@ -1,0 +1,32 @@
+===== TizonDetectionModel (2026-10-23T17:01:35-05:00)
+10:01PM INF 2 commits scanned.
+10:01PM INF scan completed in 143ms
+10:01PM INF no leaks found
+exit=0
+===== TizonApiIntegration (2026-10-23T17:01:36-05:00)
+10:01PM INF 2 commits scanned.
+10:01PM INF scan completed in 256ms
+10:01PM INF no leaks found
+exit=0
+===== TizonMovile (2026-10-23T17:01:37-05:00)
+10:01PM INF 3 commits scanned.
+10:01PM INF scan completed in 819ms
+10:01PM INF no leaks found
+exit=0
+
+===== Revisión del 2026-10-24 (después de F2-F6)
+--- TizonDetectionModel (2026-10-24T02:53:01-05:00)
+INF 17 commits scanned.
+INF scan completed in 1.35s
+INF no leaks found
+--- TizonApiIntegration (2026-10-24T02:53:04-05:00)
+INF 14 commits scanned.
+INF scan completed in 4.17s
+INF no leaks found
+--- TizonMovile (2026-10-24T02:53:09-05:00)
+INF 14 commits scanned.
+INF scan completed in 5.19s
+INF no leaks found
+Nota: TizonMovile tenía 1 hallazgo (generic-api-key) en composeApp/src/test/resources/fixtures/login_response.json,
+commit dbb01d6: es el JWT de juguete del fixture (cabecera HS256, cuerpo vacío, firma "x"), no un secreto real.
+Se excluyó solo esa huella exacta en TizonMovile/.gitleaksignore (commit e988d41).

@@ -1,0 +1,25 @@
+# Carpeta raíz del proyecto: se versiona en la rama `sistema` de TizonApiIntegration (P-07, 24-oct).
+# OJO: ese repositorio es PÚBLICO.
+
+# Los tres repositorios tienen su propio git
+/TizonDetectionModel/
+/TizonApiIntegration/
+/TizonMovile/
+
+# Nunca a git: respaldos con llaves, llaves retiradas, modelos y secretos
+/_respaldo_git/
+/_llaves_retiradas/
+*.h5
+*.keras
+*.pem
+*.jks
+*.keystore
+.env
+deploy/models/*
+!deploy/models/.gitkeep
+
+# Decisión del usuario (24-oct): el documento académico y los análisis que lo comentan no se publican
+/contextos/
+/BASE_CONOCIMIENTO_TIZON.md
+/ANALISIS_BRECHAS_TIZON.md
+/PLAN_TRABAJO_TIZON.md

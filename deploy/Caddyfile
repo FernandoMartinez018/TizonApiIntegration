@@ -1,0 +1,23 @@
+# HTTPS automático con Let's Encrypt para PUBLIC_HOST (p. ej. 3-91-10-20.sslip.io). Decisión D-07.
+{$PUBLIC_HOST} {
+	encode gzip
+
+	# Frames de hasta 2 MB en Base64 + JSON (RNF-SEG-10). La API responde 413 por encima de 2 MB.
+	request_body {
+		max_size 3MB
+	}
+
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+
+	# Nada fuera de /api.
+	handle {
+		respond 404
+	}
+
+	log {
+		output stdout
+		format json
+	}
+}
