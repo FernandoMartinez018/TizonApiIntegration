@@ -242,9 +242,9 @@
 ## F7 — Cierre (5–7 nov)
 
 - [ ] **F7-01** · RAÍZ · M · RNF-PRU-01 — `matriz-pruebas.md` completa, con el % de funcionalidades probadas. _(armada el 24-oct con las pruebas automatizadas; se completa con P1, P2 y los reportes de F4)_
-- [ ] **F7-02** · RAÍZ · M — `docs/entrega/resultados-metricas.md`: tabla final meta frente a medido (modelo, latencia, disponibilidad, cobertura) con enlaces a los reportes.
+- [ ] **F7-02** · RAÍZ · M — `docs/entrega/resultados-metricas.md`: tabla final meta frente a medido (modelo, latencia, disponibilidad, cobertura) con enlaces a los reportes. _(avance 24-oct: tabla con laboratorio, campo (PlantDoc), candidato v2, latencia local, pruebas y cobertura; faltan el dispositivo, la EC2 y la SUS)_
 - [ ] **F7-03** · RAÍZ · S — `encuesta-sus.md` (instrumento SUS en español) y, si se aplicó, los resultados. _(instrumento listo el 24-oct; falta aplicarlo a 5 personas o más)_
-- [ ] **F7-04** · RAÍZ · M — Insumos para el documento académico: arquitectura real (diagrama), alcance (tizón temprano y aviso de hoja que no es de papa incluidos por D-08; malezas por especie y drones como trabajo futuro) y resultados. **No se reescribe el PDF**: se entrega `docs/entrega/insumos-documento.md` para que los autores lo integren.
+- [ ] **F7-04** · RAÍZ · M — Insumos para el documento académico: arquitectura real (diagrama), alcance (tizón temprano y aviso de hoja que no es de papa incluidos por D-08; malezas por especie y drones como trabajo futuro) y resultados. **No se reescribe el PDF**: se entrega `docs/entrega/insumos-documento.md` para que los autores lo integren. _(avance 24-oct: alcance, arquitectura en Mermaid, metodología, resultados, limitaciones, trabajo futuro y referencias; se cierra con los resultados del dispositivo)_
 - [ ] **F7-05** · RAÍZ · M — Actualizar `BASE_CONOCIMIENTO_TIZON.md` con el estado final y cerrar `10-pendientes.md`.
 
 ---
