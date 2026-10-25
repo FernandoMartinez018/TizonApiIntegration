@@ -11,7 +11,8 @@ Decisiones de diseño:
 - Severidad siempre con icono + texto + color. Certeza en palabras (Alta/Media/Baja), sin porcentajes en bruto.
 - Escanear: botón principal de 72 dp siempre visible abajo; la tarjeta de resultado se pliega para ver la cámara.
 - La vista de la cámara aparece como un fondo oscuro (en los previews no hay cámara real).
-- Las recomendaciones muestran solo el texto genérico permitido hasta resolver P-05.
+- Las recomendaciones son las de la enfermedad que predominó en el escaneo (P-05), cada una con su fuente. En las
+  capturas del resumen quedan debajo del borde de 780 dp.
 - Historial: TECNICO y ADMIN ven el usuario de cada sesión y un filtro por usuario (RF-09 CA4).
 - Tizón temprano en ocre con icono de advertencia (el tardío sigue en óxido). Si la hoja es de otra planta,
   el chip dice "No es una hoja de papa" y no hay diagnóstico; el resumen separa tizón temprano y tardío.

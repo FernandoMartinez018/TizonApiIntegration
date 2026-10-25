@@ -136,7 +136,7 @@
 
 - [x] **F3-API-03** · API · M · RF-08 · cierra API-7
   - `SessionStatsCalculator`: función pura con las reglas de `SessionStats` y la severidad según `AppConfig`.
-  - Recomendaciones desde la tabla `recommendations` (Flyway `V2__recommendations.sql`, con el texto genérico mientras se resuelve P-05).
+  - Recomendaciones desde la tabla `recommendations` (Flyway `V2__recommendations.sql`, con el texto genérico mientras se resuelve P-05). _(24-oct: reemplazadas por las recomendaciones por enfermedad de F4-ALL-07)_
   - **CA:** pruebas unitarias con los casos borde de RF-08 CA4.
 
 - [x] **F3-API-04** · API · M · RNF-OBS-01, RNF-OBS-02, RNF-OBS-03 · cierra API-10, TX-5
@@ -195,6 +195,7 @@
 - [x] **F4-IA-04** · IA · M · cierra IA-14 — `evaluation/evaluate.py` en los modos `classifier` y `pipeline`, la auditoría del dataset y la medición de latencia en la máquina objetivo. **CA:** reportes con la tabla meta frente a lo medido. _(24-oct: reportes `classifier`, `pipeline` y `dataset_audit`; todas las metas del PDF se cumplen en la prueba de laboratorio. La latencia en la EC2 se mide en F5-ALL-02 / DISP-90)_
 - [x] **F4-IA-05** · IA · S — Reentrenamiento (08 §5) solo si F4-IA-04 queda por debajo de la meta y hay margen antes del 3-nov. _(24-oct: reentrenado con `training/train.py` por D-08 y porque el modelo original no se podía evaluar con honestidad; ver 08 §7)_
 - [x] **F4-ALL-06** · 3 repos · M · D-08 — (agregada el 24-oct a pedido del usuario) Tizón temprano y discriminación papa / no papa: contrato (`TIZON_TEMPRANO`, `NOT_POTATO`, `label_counts`, `not_potato_frames`), IA (salida interna `NO_PAPA`), API (Flyway V5) y app (estado "No es una hoja de papa", resumen por tipo de tizón). **CA:** pruebas en las tres capas y prueba de punta a punta con imágenes reales en `docker compose`: sana, tizón temprano y tardío diagnosticados; hojas de otras plantas → `NOT_POTATO`.
+- [x] **F4-ALL-07** · 3 repos · M · RF-08 CA3 · cierra P-05 — (agregada el 24-oct a pedido del usuario) Recomendaciones según la enfermedad que predominó entre los frames afectados de la sesión (en empate, tizón tardío), con textos resumidos del ICA, la FHIA y la Universidad de Wisconsin ([fuentes-recomendaciones.md](fuentes-recomendaciones.md)): contrato (`Recommendation.disease`), API (Flyway V6) y app (título "Recomendaciones para tizón temprano / tardío"). **CA:** pruebas de la regla (mayoría, empate y sin afectados) y del flujo para cada enfermedad.
 
 ---
 

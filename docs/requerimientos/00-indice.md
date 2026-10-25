@@ -17,6 +17,7 @@ Versión 1.0 · 23-oct-2026 · Responsable: Fernando Martínez · Entrega: **8-n
 | — | [Guion de prueba en dispositivo](guion-prueba-dispositivo.md) | Casos DISP de las pruebas 1 (30-oct) y 2 (5-nov) |
 | — | [Matriz de pruebas](matriz-pruebas.md) | Funcionalidades del PDF y RF con sus pruebas y su estado |
 | — | [Encuesta SUS](encuesta-sus.md) | Instrumento de usabilidad y cálculo del puntaje |
+| — | [Fuentes de las recomendaciones](fuentes-recomendaciones.md) | Regla por enfermedad, referencias y trazabilidad de cada texto (P-05) |
 
 **Trazabilidad:** cada RF/RNF indica las falencias que cierra (códigos de `ANALISIS_BRECHAS_TIZON.md`), y cada tarea del backlog indica los RF/RNF que implementa.
 

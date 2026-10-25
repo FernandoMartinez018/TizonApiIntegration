@@ -21,7 +21,7 @@
 | `ia` | Construida desde `TizonDetectionModel/Dockerfile` | `internal` | 8000 (solo interno) | `./models:/models:ro` |
 | `db` | `postgres:16-alpine` | `internal` | 5432 (solo interno) | `pgdata` |
 
-Todo vive en `deploy/` dentro de la carpeta raíz (no en un repo de servicio). Opcionalmente se convierte en un 4.º repositorio `TizonDeploy` (ver 10-pendientes).
+Todo vive en `deploy/` dentro de la carpeta raíz (no en un repo de servicio), que se versiona en la rama `sistema` de TizonApiIntegration (P-07).
 
 ## Configuración (variables de entorno)
 | Variable | Servicio | Obligatoria | Ejemplo o nota |

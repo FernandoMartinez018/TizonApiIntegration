@@ -64,7 +64,7 @@ El usuario crea una cuenta con usuario, nombre completo y contraseña. Queda con
 ### RF-08 · M · API-7 — Resumen de sesión y recomendaciones
 - CA1: Las estadísticas siguen `SessionStats`: `avg_confidence` solo sobre los frames DETECTED y `dominant_label` es la clase más frecuente (en empate, la más severa). Afectado = tizón temprano o tardío; el resumen los muestra por separado (`label_counts`).
 - CA2: La severidad se calcula con los umbrales de configuración: `warning_pct=10` y `critical_pct=30` por defecto.
-- CA3: El backend entrega las recomendaciones por severidad, cada una con su `source`. Se guardan en una tabla `recommendations` sembrada por Flyway. **No se inventan textos agronómicos:** si no hay una fuente validada, el texto se limita a "Consulta a un técnico agrónomo" y queda anotado en 10-pendientes.
+- CA3: El backend entrega las recomendaciones de la enfermedad que predominó entre los frames afectados de la sesión (tizón temprano o tardío; en empate, tardío), cada una con su `source`. Sin frames afectados no hay recomendaciones. Se guardan en una tabla `recommendations` sembrada por Flyway. **No se inventan textos agronómicos:** cada texto resume una guía técnica citada en [fuentes-recomendaciones.md](fuentes-recomendaciones.md) (P-05, 24-oct).
 - CA4: Hay pruebas unitarias del cálculo con casos borde: 0 frames, todos NO_VEGETATION, 100 % afectados.
 
 ### RF-09 · M · MOB-14 — Historial

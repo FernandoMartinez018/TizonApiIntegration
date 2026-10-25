@@ -14,9 +14,9 @@ Entregar el 8-nov-2026 una versión **segura, consistente y medible** del sistem
 1. El usuario se registra o inicia sesión.
 2. Inicia un escaneo: la app pide la ubicación (opcional) y crea una sesión.
 3. Apunta a las hojas. La app envía frames periódicamente.
-4. La IA clasifica cada región de hoja como `Sano` o `Tizon Tardio`.
+4. La IA clasifica cada región de hoja como `Sano`, `Tizón temprano` o `Tizón tardío`, o avisa que la hoja no es de papa (D-08).
 5. La app muestra el resultado en vivo: cajas, diagnóstico y severidad.
-6. El usuario finaliza el escaneo y recibe un resumen con su severidad y recomendaciones.
+6. El usuario finaliza el escaneo y recibe un resumen con su severidad y las recomendaciones de la enfermedad que predominó.
 7. Si la severidad supera el umbral, se genera una **alerta**, que ven el propio usuario y los técnicos.
 8. El historial muestra las sesiones con fecha, ubicación y severidad, y opcionalmente un mapa OSM.
 

@@ -81,7 +81,7 @@ El botón "atrás" se comporta de forma estándar. Durante un escaneo activo apl
 ### 5. Resumen de sesión (al finalizar)
 - Encabezado con la severidad (icono + texto + color) y el % afectado grande.
 - Datos: hojas analizadas, afectadas, con tizón temprano, con tizón tardío, hojas que no eran de papa (si hubo), duración, ubicación y finca.
-- Recomendaciones (del backend) con su fuente.
+- Recomendaciones (del backend) con su fuente, bajo el título "Recomendaciones para tizón temprano" o "… tardío", según la enfermedad que predominó.
 - Si se generó una alerta: banner "Se generó una alerta para tu técnico".
 - Botones "Nuevo escaneo" y "Ver historial".
 
