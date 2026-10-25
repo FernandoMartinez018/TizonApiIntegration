@@ -3,14 +3,14 @@
 **Meta del PDF (§4.11):** ≥ 90 % de las funcionalidades principales verificadas. Según 05-RNF, cuenta cada fila con una
 prueba que pasa. Las metas de calidad del modelo y del producto están en la §C.
 
-**Estado al 24-oct-2026** (después del modelo de 4 salidas, D-08) (rama `dev` de los 3 repos):
+**Estado al 24-oct-2026** (después del modelo de 4 salidas, D-08, y de las recomendaciones por enfermedad, F4-ALL-07) (rama `dev` de los 3 repos):
 
 | Repositorio | Pruebas automatizadas | Resultado |
 |---|---|---|
-| TizonDetectionModel | 80 unitarias (pytest, incluye la prueba de contrato) + 2 de integración con el modelo real | ✔ todas pasan |
-| TizonApiIntegration | 89 (JUnit, MockWebServer, H2 en modo PostgreSQL y Testcontainers con PostgreSQL 16). Cobertura JaCoCo de líneas: 92,8 % en total, `service` 95,5 % y `security` 88,8 % (mínimo exigido 70 %, RNF-PRU-02) | ✔ todas pasan |
+| TizonDetectionModel | 82 unitarias (pytest, incluye la prueba de contrato y la partición incremental) + 2 de integración con el modelo real | ✔ todas pasan |
+| TizonApiIntegration | 90 (JUnit, MockWebServer, H2 en modo PostgreSQL y Testcontainers con PostgreSQL 16). Cobertura JaCoCo de líneas: 93,5 % en total, `service` 96,7 % y `security` 88,8 % (mínimo exigido 70 %, RNF-PRU-02) | ✔ todas pasan |
 | TizonMovile | 163 (55 unitarias de ViewModels, cliente y mapeo + 108 capturas Roborazzi de todos los `@Preview`) | ✔ todas pasan |
-| Sistema completo | `deploy/scripts/smoke-test.sh`, una verificación extra de 11 llamadas (alertas, usuarios, filtro del historial, cancelación, 409, 404 y 401) y una prueba con imágenes reales (sana, tizón temprano, tizón tardío y 2 de otras plantas) contra `docker compose` | ✔ pasan |
+| Sistema completo | `deploy/scripts/smoke-test.sh`, una verificación extra de 11 llamadas (alertas, usuarios, filtro del historial, cancelación, 409, 404 y 401) una prueba con imágenes reales (sana, tizón temprano, tizón tardío y 2 de otras plantas) contra `docker compose` y otra de las recomendaciones por enfermedad (3 sesiones: más tizón temprano, más tardío y sin tizón; la V6 se aplicó sobre la base existente) | ✔ pasan |
 | Dispositivo | Guion `guion-prueba-dispositivo.md` (DISP-01 a DISP-99) | ⏳ P1 el 30-oct, P2 el 5-nov |
 
 **Leyenda:** ✔ verificada (todos sus criterios tienen prueba que pasa) · ◐ con prueba que pasa, pero un criterio solo
@@ -25,7 +25,7 @@ se confirma en el dispositivo o con datos reales · ⏳ sin prueba que pase toda
 | 1 | Carga de imágenes | App: `ScanViewModelTest` (iniciarCreaLaSesion…YPideUnFrame, unSoloFrameEnCursoYElSiguienteTrasElIntervalo), `PreviewTransformTest.elFrameSeEscalaA640PorElLadoMayor`. API: `SessionFlowTest.elDuenoEnviaFramesYRecibeEstadisticas`. Sistema: *smoke test* (frame analizado) | DISP-21, DISP-22 (cámara real, rotación del frame) | ◐ |
 | 2 | Procesamiento de imágenes | IA: `test_predictor` (decodificación, escala `unit` y `mobilenet_v2`, RGB/BGR), `test_vegetation` (8: hoja sana, necrosis, suelo, fondos artificiales, primer plano), `test_model_meta` (5) | — | ✔ |
 | 3 | Clasificación de la imagen | IA: `test_predictor.test_load_model` y `test_predict_imagen_verde_cumple_el_contrato` (integración con el `.h5`), `test_api.test_frame_valido_devuelve_resultado_principal`, `test_contract` (7) | — | ✔ |
-| 4 | Identificación de tizón tardío | IA: `test_gana_la_clase_mas_severa_aunque_tenga_menor_confianza`, `test_hoja_con_necrosis_se_detecta_completa_y_pasa_el_filtro`. API: `SessionStatsCalculatorTest` (6), `AlertFlowTest.reglaDeAlerta`. Exactitud medida en la partición de prueba de PlantVillage (08 §7): accuracy 95,6 % / 94,4 %, F1 de tizón tardío 95,7 % / 96,1 % y de temprano 98,0 % / 95,6 % | DISP-24, DISP-24A, DISP-25A | ◐ (falta campo, P-02) |
+| 4 | Identificación de tizón tardío | IA: `test_gana_la_clase_mas_severa_aunque_tenga_menor_confianza`, `test_hoja_con_necrosis_se_detecta_completa_y_pasa_el_filtro`. API: `SessionStatsCalculatorTest` (6), `AlertFlowTest.reglaDeAlerta`. Exactitud medida en la partición de prueba de PlantVillage (08 §7): accuracy 95,6 % / 94,4 %, F1 de tizón tardío 95,7 % / 96,1 % y de temprano 98,0 % / 95,6 % | DISP-24, DISP-24A, DISP-25A | ◐ (en campo no cumple con PlantDoc, 08 §8; faltan las fotos propias, P-02) |
 | 5 | Presentación del resultado | App: 102 capturas Roborazzi (escaneo, resumen, historial y alertas en claro, oscuro y fuente al 200 %), `ScanViewModelTest.finalizarEmiteElResumenYLimpiaLaSesion`, `ModelsDeserializationTest` (6) | DISP-22, DISP-23 (cajas alineadas sobre la cámara), DISP-32 | ◐ |
 | 6 | Manejo de imágenes no válidas | IA: `test_base64_invalido_responde_400_invalid_image`, `test_imagen_corrupta_responde_400_invalid_image`, `test_frame_corto_responde_422_con_campo`, `test_sin_hoja_es_resultado_valido_con_label_null`. API: `IaClientIntegrationTest.ia400EsInvalidImage`, `SessionFlowTest.noVegetationEsUnResultadoQueSePersiste`. App: `ScanViewModelTest.frameInvalidoSeDescartaSinCambiarElEstado`, `sinHojaMuestraElEstadoYConservaElUltimoDiagnostico` | DISP-25 | ✔ |
 | 7 | Registro de resultados | API: `SessionFlowTest` (persistencia, historial, `errorDeLaIaNoPersisteNada`), `PostgresSchemaTest` (Flyway + Hibernate en PostgreSQL real), `AlertFlowTest` (6). App: `HistoryViewModelTest` (7). Sistema: verificación extra (historial filtrado, cancelación) | DISP-51, DISP-52 | ✔ |
@@ -61,10 +61,10 @@ totalmente verificadas (✔) y 4 esperan la prueba en el dispositivo (◐).
 
 | Métrica (PDF) | Meta | Cómo se mide | Estado |
 |---|---|---|---|
-| Accuracy, Precision, Recall, F1 | ≥ 90 % | `evaluation/evaluate.py` sobre la partición de prueba (479 imágenes): 95,6 / 94,2 / 97,3 / 95,7 % (`classifier`) y 94,4 / 94,8 / 97,3 / 96,1 % (`pipeline`) | ✔ en laboratorio; ⏳ en campo (P-02) |
+| Accuracy, Precision, Recall, F1 | ≥ 90 % | `evaluation/evaluate.py` sobre la partición de prueba (479 imágenes): 95,6 / 94,2 / 97,3 / 95,7 % (`classifier`) y 94,4 / 94,8 / 97,3 / 96,1 % (`pipeline`) | ✔ en laboratorio; ✘ en campo: PlantDoc, 274 fotos, accuracy 73,7 % y recall de tizón tardío 6,2 % (candidato v2: 59,4 %, 08 §8); ⏳ fotos propias (P-02) |
 | Especificidad | ≥ 85 % | 97,3 % (`classifier`) y 97,6 % (`pipeline`) | ✔ en laboratorio |
 | Tasa de error | ≤ 10 % | 4,4 % (`classifier`) y 5,6 % (`pipeline`) | ✔ en laboratorio |
-| Tiempo de respuesta | ≤ 5 s por imagen | DISP-90 (p95 de `latency_ms` en la BD) y DISP-91 (cronómetro); `inference_ms` p95 < 1.500 ms en la EC2 (RNF-REN-02) | ⏳ P1 (local) y P2 (EC2) |
+| Tiempo de respuesta | ≤ 5 s por imagen | DISP-90 (p95 de `latency_ms` en la BD) y DISP-91 (cronómetro); `inference_ms` p95 < 1.500 ms en la EC2 (RNF-REN-02). En el stack local, sin red móvil: p95 de 390 ms (30 frames, 24-oct) | ⏳ P1 (local) y P2 (EC2) |
 | Disponibilidad | ≥ 95 % | `deploy/scripts/uptime.sh` cada minuto en la EC2 | ⏳ depende de la EC2 (P-03) |
 | Usabilidad | ≥ 85 % | `encuesta-sus.md`: puntaje SUS promedio ≥ 85 con 5 personas o más | ⏳ falta aplicarla |
 | Mantenibilidad | Actualizar el modelo sin reconstruir | Se reemplazan `deploy/models/*.h5` y `model_meta.json` y se reinicia `ia` (RNF-MAN-02); `test_model_meta.test_el_meta_del_repo_es_valido` y la carga con verificación de `sha256` | ✔ |

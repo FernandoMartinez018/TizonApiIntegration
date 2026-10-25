@@ -126,3 +126,64 @@ en la prueba independiente y queda adoptado; el anterior sigue en la carpeta ra�
 `NO_PAPA` solo conoce 13 cultivos de PlantVillage; malezas u otras plantas de campo pueden aceptarse como papa. Hay
 solo 152 hojas sanas (22 en la prueba), así que las métricas de `SANO` tienen poca precisión estadística.
 
+## 8. Prueba con fotos de campo y candidato v2 (24-oct, P-02 y propuesta 5)
+**Set de campo** (no hay fotos propias todavía): PlantDoc (`github.com/pratikkayal/PlantDoc-Dataset`, CC BY 4.0),
+fotos de internet tomadas en condiciones reales. Se armó con toda su partición test (papa con tizón y otras especies)
+y el 30 % de las hojas de papa de su partición train, apartado por grupos de casi duplicados. Se retiraron 6 fotos
+que PlantDoc repite en su entrenamiento: 5 aparecen con otra etiqueta (la misma imagen como tizón tardío y como
+temprano, o como tomate), lo que muestra ruido en sus etiquetas. Quedan **274 fotos: 38 de tizón temprano, 32 de
+tardío y 204 de otras especies. PlantDoc no tiene papa sana.** El origen de cada foto está en
+`TizonDetectionModel/training/sources.csv` (`uso` = `campo`).
+
+**Modelo en uso (4c), modo `pipeline`:** accuracy 73,7 %, recall de tizón tardío 6,2 % y **el 72,9 % de las hojas de
+papa se rechaza como `NO_PAPA`**. Aprendió que "papa" es una hoja de PlantVillage sobre fondo uniforme: cualquier
+foto de campo le parece otra planta. Su accuracy es la de responder siempre "no es papa" (204 / 274 = 74,5 %).
+
+**Candidato v2** (`modelo_tizon_4c_v2.keras`, `mobilenetv2-4c-a7c205d2-20261024`): mismo entrenamiento de §7, con
+`--keep-split` (la prueba de laboratorio es la misma) y más datos solo en train y val:
+- 137 fotos de campo de papa con tizón de PlantDoc train, repetidas 3 veces (sobremuestreo: son pocas frente a 2.000
+  de laboratorio). Las restantes de PlantDoc no se usaron para entrenar.
+- 789 hojas de otras plantas como `NO_PAPA`: 349 de PlantDoc train y 440 sanas de PlantVillage.
+
+| `pipeline` | Meta | 4c laboratorio | v2 laboratorio | 4c campo | v2 campo |
+|---|---|---|---|---|---|
+| Accuracy (global) | ≥ 90 % | 94,4 % | 93,7 % | 73,7 % | 73,4 % |
+| Precision tizón tardío | ≥ 90 % | 94,8 % | 96,6 % | 11,8 % | 47,5 % |
+| Recall tizón tardío | ≥ 90 % | 97,3 % | 94,7 % | 6,2 % | 59,4 % |
+| F1 tizón tardío | ≥ 90 % | 96,1 % | 95,6 % | 8,2 % | 52,8 % |
+| Especificidad tizón tardío | ≥ 85 % | 97,6 % | 98,5 % | 93,8 % | 91,3 % |
+| F1 tizón temprano | — | 95,6 % | 95,3 % | 21,7 % | 38,3 % |
+| Hojas de papa rechazadas (`NO_PAPA`) | — | 1,6 % | 1,6 % | 72,9 % | 15,7 % |
+| Otras plantas aceptadas como papa | — | 7,6 % | 8,3 % | 4,4 % | 19,6 % |
+
+- En `classifier` (modelo solo), el v2 da en laboratorio 96,0 % de accuracy y 96,7 % de F1 de tizón tardío. En campo,
+  `classifier` y `pipeline` dan casi lo mismo: accuracy 73,7 % y 73,4 %, y rechazo de papa 18,6 % y 15,7 %.
+- Intervalos de Wilson al 95 % en campo: recall de tizón tardío de 1,7 % a 20,1 % (4c) frente a 42,3 % a 74,5 % (v2).
+  No se solapan. La accuracy global se solapa por completo (68 % a 79 % en ambos).
+- Latencia: los dos modelos tardan lo mismo (misma arquitectura). Medidos en el mismo proceso y con la misma imagen,
+  la media es de unos 238 ms y el p95 de unos 300 ms en el PC de desarrollo. La meta (p95 < 1,5 s) se mide en la EC2.
+- Integridad: sin duplicados entre el set de campo y el entrenamiento del v2 después de retirar las 6 fotos. En
+  laboratorio aparecen 2 casi duplicados más (papa con cerezo o soya sanos, en el umbral de pHash), que por ser de
+  especies distintas no son la misma hoja.
+
+**Decisión: el modelo en uso sigue siendo el 4c, y la adopción del v2 queda en manos del usuario.** La regla
+fijada antes de ver los resultados pedía dos cosas al v2 frente al 4c sobre el mismo set de campo: mejorar la accuracy
+y bajar el rechazo de papa. El rechazo bajó del 73 % al 16 %, pero la accuracy quedó igual. En este set la accuracy
+global no sirve para compararlos, porque el 74 % de las fotos son de otras plantas.
+
+**Recomendación: adoptar el v2.** Es el único que detecta tizón en fotos de campo y conserva las metas de laboratorio.
+Su costo es que analiza el 19,6 % de las hojas de otras plantas como si fueran papa, frente al 4,4 % del 4c.
+
+Para adoptarlo:
+1. En `deploy/models/`, reemplazar `model_meta.json` por `model_meta_v2.json` y poner
+   `MODEL_FILE=modelo_tizon_4c_v2.keras` en `deploy/.env`. Luego reiniciar `ia`.
+2. Copiar ese meta a `TizonDetectionModel/models/model_meta.json` y actualizar las referencias al archivo del modelo.
+
+**Limitaciones que siguen:**
+- No hay papa sana de campo, así que no se mide cuántas hojas sanas se marcarían como enfermas.
+- PlantDoc tiene etiquetas con ruido y fotos de internet, que no son las del celular en el cultivo.
+- Ninguno de los dos llega al 90 % en campo.
+- El siguiente paso es el set propio (`protocolo-fotos-campo.md`). Además, hay datasets abiertos de campo con papa sana
+  que valdría la pena evaluar, con su licencia verificada:
+  - Shabrina et al. (2023), *Potato Leaf Disease Dataset in Uncontrolled Environment*, Mendeley Data;
+  - *Potato Leaf (Healthy and Late Blight)*, Mendeley Data.

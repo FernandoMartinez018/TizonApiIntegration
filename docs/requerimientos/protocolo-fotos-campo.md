@@ -48,7 +48,7 @@ python -m evaluation.evaluate --data <carpeta> --mode pipeline --model ../modelo
   hoja que no es de papa).
 - Los reportes quedan en `evaluation/reports/<fecha>_campo-propio_<modo>.md` y `.json`, con la tabla de metas del PDF
   y la matriz de confusión. Se versionan junto con el modelo evaluado. Las fotos no se versionan.
-- Si falta una clase, el reporte la muestra con 0 imágenes. `TIZON_TARDIO` es la única carpeta obligatoria.
+- Puede faltar cualquier carpeta salvo `TIZON_TARDIO`. El reporte indica cuántas imágenes tuvo cada clase.
 
 ## 6. Cómo leer el resultado
 - Compara con los reportes de laboratorio (`*_classifier.md`, `*_pipeline.md`) y de PlantDoc (`*_campo-plantdoc_*.md`).
