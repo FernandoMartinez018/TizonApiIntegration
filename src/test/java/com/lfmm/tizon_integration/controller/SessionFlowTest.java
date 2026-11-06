@@ -94,6 +94,13 @@ class SessionFlowTest {
         return as(user, post("/sessions/" + sessionId + "/frames").content(FRAME));
     }
 
+    /** El contrato exige started_at en la respuesta; la app lo necesita para leerla (F5-MOB). */
+    @Test
+    void iniciarDevuelveStartedAt() throws Exception {
+        as(ana, post("/sessions")).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.started_at").isNotEmpty());
+    }
+
     @Test
     void iniciarConUbicacionYFincaUsaElUsuarioDelJwt() throws Exception {
         as(ana, post("/sessions").content("""
