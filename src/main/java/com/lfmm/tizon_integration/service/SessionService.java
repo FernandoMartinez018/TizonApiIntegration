@@ -58,7 +58,7 @@ public class SessionService {
             applyLocation(session, req.location());
             session.setFieldName(StringUtils.hasText(req.fieldName()) ? req.fieldName().trim() : null);
         }
-        session = sessionRepo.save(session);
+        session = sessionRepo.saveAndFlush(session);
         log.info("Sesión iniciada session_id={} username={}", session.getId(), username);
         return toSummary(session);
     }
