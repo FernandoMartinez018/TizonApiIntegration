@@ -42,6 +42,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Cargar UserDetails y registrar en el SecurityContext
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                // Un usuario deshabilitado pierde el acceso aunque su token siga vigente.
+                if (!userDetails.isEnabled()) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -68,14 +73,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return header.substring(BEARER_PREFIX.length());
         }
         return null;
-    }
-
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-
-        return path.startsWith("/auth") ||
-                path.startsWith("/actuator");
     }
 
 }

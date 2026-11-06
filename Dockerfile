@@ -122,20 +122,10 @@ COPY --from=build /workspace/target/extracted/spring-boot-loader/    ./
 COPY --from=build /workspace/target/extracted/snapshot-dependencies/ ./
 COPY --from=build /workspace/target/extracted/application/           ./
 
-# ── Variables de entorno con valores por defecto ──────────────────────────
-# Estos valores se usan si NO se pasan variables al correr el contenedor.
-# En producción, SIEMPRE sobreescribir via --env-file o -e en docker run,
-# o via variables de entorno en la task definition de ECS.
-#
-# IMPORTANTE: Los valores aquí son solo para desarrollo local.
-# Nunca hardcodear secretos reales en el Dockerfile (quedan en el historial de Git).
-ENV DB_URL=jdbc:postgresql://localhost:5432/tizon_db
-ENV DB_USER=tizon_user
-ENV DB_PASS=tizon_pass
-ENV JWT_SECRET=CambiarEnProduccion32CharsMinimo!!
-ENV JWT_EXPIRATION_MS=86400000
-ENV PYTHON_SERVICE_URL=https://8q2cv4tdlc.execute-api.sa-east-1.amazonaws.com/prod
-ENV PYTHON_TIMEOUT_SECONDS=30
+# ── Variables de entorno ──────────────────────────────────────────────────
+# Los secretos (DB_PASS, JWT_SECRET, INTERNAL_API_TOKEN) y las URLs de ambiente
+# NO van en la imagen: se inyectan al correr el contenedor (deploy/.env).
+# Sin ellos la API no arranca. Ver README.md → Configuración.
 ENV PORT=8080
 
 # Variables de optimización de la JVM para contenedores:

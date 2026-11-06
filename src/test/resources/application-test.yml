@@ -7,15 +7,13 @@
 
 spring:
   datasource:
-    url:      jdbc:h2:mem:tizon_test_db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url:      jdbc:h2:mem:tizon_test_db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    password: test
 
   jpa:
     hibernate:
-      ddl-auto: create-drop   # Crea las tablas al arrancar y las borra al terminar
-    database-platform: org.hibernate.dialect.H2Dialect
+      ddl-auto: validate      # El esquema lo crea Flyway, igual que en producción
     show-sql: false
 
   h2:
@@ -26,10 +24,15 @@ jwt:
   secret: TestSecretKeyForJUnitTestsOnly32CharsMin!!
   expiration-ms: 3600000   # 1 hora
 
-python:
-  service:
-    base-url: http://localhost:9999   # MockWebServer en tests
-    timeout-seconds: 5
+tizon:
+  admin:
+    username: admin
+    password: admin-test-pass
+
+ia:
+  base-url: http://localhost:9999   # IA simulada en tests
+  timeout-seconds: 5
+  internal-token: test-internal-token
 
 logging:
   level:
