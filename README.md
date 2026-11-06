@@ -87,6 +87,10 @@ docker run --env-file ../deploy/.env -p 8080:8080 tizon-api
 ```
 La imagen no contiene secretos ni URLs de ambiente: todo se inyecta al ejecutar el contenedor.
 
+## Despliegue en la nube
+
+Guía paso a paso para desplegar todo el sistema (ejemplo en AWS), con la APK, el servidor y la operación: [docs/despliegue-en-la-nube.md](docs/despliegue-en-la-nube.md).
+
 ## CI/CD (GitHub Actions)
 `.github/workflows/ci.yml` corre en cada push y PR a `dev`, `qa` y `main`: `./mvnw -B verify` y gitleaks.
 En cada push a `qa` o `main` publica la imagen `ghcr.io/<owner>/tizon-api` con las etiquetas `:qa` o `:main`
