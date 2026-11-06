@@ -4,8 +4,8 @@
 (Spring Boot) y **caddy** (HTTPS con Let's Encrypt, perfil `tls`). Solo caddy publica puertos a Internet;
 la IA y la base de datos están en una red interna sin salida (RNF-SEG-07).
 
-> **Estado (23-oct):** todo está preparado, pero **no se ha creado nada en AWS** (decisión del usuario).
-> Los pasos de la sección 3 los ejecuta el usuario cuando decida desplegar (pendiente P-03).
+> **Estado (5-nov):** desplegado en una EC2 de `us-east-1` (`https://100-56-163-85.sslip.io/api`). La sección 3 describe
+> cómo se montó. El puerto 22 se abre solo al rango de IP del administrador.
 
 ## 1. Flujo de CI/CD
 
