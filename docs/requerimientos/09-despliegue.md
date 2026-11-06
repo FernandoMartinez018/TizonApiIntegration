@@ -33,7 +33,7 @@ deploy/
 1. Crear la EC2 y la Elastic IP según §1, y conectarse por SSH.
 2. Ejecutar `bootstrap-ec2.sh`.
 3. Clonar los 3 repos en `/opt/tizon/` y copiar `deploy/` (o clonar el repo `TizonDeploy`, si se crea).
-4. Copiar `modelo_tizon_4c.keras` y `model_meta.json` a `deploy/models/` (por `scp`). El `.h5` anterior solo hace falta para volver atrás.
+4. Copiar `modelo_tizon_4c_v2.keras` (con `MODEL_FILE=modelo_tizon_4c_v2.keras` en `.env`) y `model_meta.json` a `deploy/models/` (por `scp`). El `.h5` anterior solo hace falta para volver atrás.
 5. Crear `deploy/.env` desde `.env.example`:
    - Generar los secretos con `openssl rand -base64 48`.
    - `PUBLIC_HOST=<ip-con-guiones>.sslip.io`.

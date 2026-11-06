@@ -28,7 +28,7 @@ la IA y la base de datos están en una red interna sin salida (RNF-SEG-07).
 ## 2. Ejecución local
 ```bash
 cp deploy/.env.example deploy/.env      # completar POSTGRES_PASSWORD, JWT_SECRET e INTERNAL_API_TOKEN
-cp modelo_tizon_4c.keras deploy/models/            # modelo en uso (D-08); no va a git
+cp modelo_tizon_4c_v2.keras deploy/models/         # modelo en uso (P-08); no va a git
 cp TizonDetectionModel/models/model_meta.json deploy/models/
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env ps      # db, ia y api "healthy"
@@ -54,7 +54,7 @@ SMOKE_USER=... SMOKE_PASS=... deploy/scripts/smoke-test.sh                 # htt
    # desde el PC: scp -r deploy ubuntu@<IP>:/opt/tizon/
    ```
    (Los repos solo se necesitan para `deploy.sh --build`; con GHCR basta `deploy/`).
-4. Copiar el modelo: `scp modelo_tizon_4c.keras TizonDetectionModel/models/model_meta.json ubuntu@<IP>:/opt/tizon/deploy/models/`.
+4. Copiar el modelo: `scp modelo_tizon_4c_v2.keras TizonDetectionModel/models/model_meta.json ubuntu@<IP>:/opt/tizon/deploy/models/` y poner `MODEL_FILE=modelo_tizon_4c_v2.keras` en el `.env`.
 5. Crear `/opt/tizon/deploy/.env` desde `.env.example`: secretos con `openssl rand -base64 48`,
    `COMPOSE_PROFILES=tls`, `PUBLIC_HOST=<ip-con-guiones>.sslip.io`, `ADMIN_USERNAME` y `ADMIN_PASSWORD`.
    `chmod 600 .env`.

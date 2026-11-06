@@ -10,7 +10,7 @@ Los reportes están en `TizonDetectionModel/evaluation/reports/` y cada uno trae
 origen de las imágenes, la máquina y la lista de errores.
 
 ## 1. Tabla final: meta frente a medido
-Modelo en uso: `mobilenetv2-4c-02b1cb27-20261024` (`modelo_tizon_4c.keras`). Para la calidad del modelo,
+Modelo adoptado el 5-nov (P-08): v2, `mobilenetv2-4c-a7c205d2-20261024` (`modelo_tizon_4c_v2.keras`). Hasta esa fecha estuvo en uso el 4c, `mobilenetv2-4c-02b1cb27-20261024`. Para la calidad del modelo,
 "laboratorio" es la partición de prueba de PlantVillage (479 imágenes) y "campo" es el set de PlantDoc (274 fotos).
 Las dos se miden en modo `pipeline`, el flujo real de `/v1/analyze`.
 
@@ -84,14 +84,14 @@ fotos de internet tomadas en condiciones reales.
   para comparar los dos modelos en campo: el 4c logra la suya rechazando casi todo.
 - En modo `classifier` (el modelo sin el filtro) los resultados son casi iguales: 4c 74,5 % y v2 73,7 % de accuracy.
 
-## 4. Candidato v2 y decisión pendiente
+## 4. Candidato v2 y decisión (adoptado el 5-nov)
 - **Qué cambia el v2:** son las mismas imágenes y la misma partición de laboratorio, más fotos de campo solo en train y
   val. En concreto, 137 fotos de papa con tizón de PlantDoc (repetidas 3 veces) y 789 hojas de otras plantas.
 - **Laboratorio:** el v2 sigue cumpliendo todas las metas.
 - **Campo:** es el único de los dos que detecta tizón.
-- **Por qué no se adoptó:** la regla fijada antes de ver los resultados pedía mejorar la accuracy y el rechazo de papa en
+- **Por qué no se adoptó de forma automática:** la regla fijada antes de ver los resultados pedía mejorar la accuracy y el rechazo de papa en
   campo. La accuracy quedó igual (§3), así que no se adoptó de forma automática.
-- **Recomendación: adoptarlo.** El costo es analizar como papa el 19,6 % de las hojas de otras plantas, frente al 4,4 %
+- **Decisión del usuario (5-nov): adoptarlo.** El costo es analizar como papa el 19,6 % de las hojas de otras plantas, frente al 4,4 %
   del 4c. Los pasos para adoptarlo están en `docs/requerimientos/08-modelo-ia.md` §8.
 
 ## 5. ¿Es papa? (discriminación papa / otras plantas)

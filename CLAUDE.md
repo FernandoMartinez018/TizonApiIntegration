@@ -14,7 +14,7 @@ Esta carpeta raíz se versiona en la rama **`sistema`** de `TizonApiIntegration`
 | `TizonMovile/` | App Android | Kotlin 2.3, Compose Multiplatform (solo Android), Ktor, Koin, CameraX | `github.com/FernandoMartinez018/TizonMovile` |
 
 **Otros elementos de la raíz:**
-- `modelo_tizon_4c.keras`: modelo en uso (MobileNetV2, salidas SANO, TIZON_TEMPRANO, TIZON_TARDIO y NO_PAPA; entrenado con `TizonDetectionModel/training/train.py`). `modelo_tizon_4c_v2.keras`: candidato entrenado también con fotos de campo de PlantDoc; espera la decisión del usuario (P-08, `08-modelo-ia.md` §8). `modelo_tizon_tardio.h5`: modelo anterior (2 clases, Keras 2.14), solo para volver atrás. **Ninguno va a git.**
+- `modelo_tizon_4c.keras`: modelo anterior de 4 salidas, respaldo para volver atrás (MobileNetV2, salidas SANO, TIZON_TEMPRANO, TIZON_TARDIO y NO_PAPA; entrenado con `TizonDetectionModel/training/train.py`). `modelo_tizon_4c_v2.keras`: **modelo en uso desde el 5-nov** (P-08, `08-modelo-ia.md` §8); entrenado también con fotos de campo de PlantDoc. `TizonDetectionModel/models/model_meta.json` es el suyo. `modelo_tizon_tardio.h5`: modelo anterior (2 clases, Keras 2.14), solo para volver atrás. **Ninguno va a git.**
 - `contextos/`: documento académico en PDF (fuente de los requerimientos de calidad).
 - `docs/requerimientos/`: **especificación que debes implementar**. Empieza por `00-indice.md`.
 - `contracts/tizon-api.yaml`: **contrato OpenAPI, fuente de verdad** de la API pública (app ↔ Spring) y de la interna (Spring ↔ IA).
@@ -54,7 +54,7 @@ Esta carpeta raíz se versiona en la rama **`sistema`** de `TizonApiIntegration`
 # IA (TizonDetectionModel)
 python -m venv .venv && . .venv/bin/activate && pip install -r requirements-dev.txt
 pytest test/ -m "not integration"        # unitarias
-MODEL_PATH=../modelo_tizon_4c.keras pytest test/ -m integration
+MODEL_PATH=../modelo_tizon_4c_v2.keras pytest test/ -m integration
 ruff check app test
 
 # API (TizonApiIntegration)

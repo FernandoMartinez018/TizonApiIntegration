@@ -166,7 +166,9 @@ foto de campo le parece otra planta. Su accuracy es la de responder siempre "no 
   laboratorio aparecen 2 casi duplicados más (papa con cerezo o soya sanos, en el umbral de pHash), que por ser de
   especies distintas no son la misma hoja.
 
-**Decisión: el modelo en uso sigue siendo el 4c, y la adopción del v2 queda en manos del usuario.** La regla
+**Decisión (5-nov, P-08): el usuario aprobó adoptar el v2** (`modelo_tizon_4c_v2.keras`, `mobilenetv2-4c-a7c205d2-20261024`). El 4c queda como respaldo para volver atrás.
+
+Antecedente (24-oct): el modelo en uso era el 4c y la adopción del v2 quedó en manos del usuario. La regla
 fijada antes de ver los resultados pedía dos cosas al v2 frente al 4c sobre el mismo set de campo: mejorar la accuracy
 y bajar el rechazo de papa. El rechazo bajó del 73 % al 16 %, pero la accuracy quedó igual. En este set la accuracy
 global no sirve para compararlos, porque el 74 % de las fotos son de otras plantas.

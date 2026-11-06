@@ -34,7 +34,7 @@ services:
     environment:
       APP_ENV: production
       INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?Falta INTERNAL_API_TOKEN en deploy/.env}
-      MODEL_PATH: /models/${MODEL_FILE:-modelo_tizon_4c.keras}
+      MODEL_PATH: /models/${MODEL_FILE:-modelo_tizon_4c_v2.keras}
       MODEL_META_PATH: /models/model_meta.json
     volumes:
       - ./models:/models:ro          # .h5 + model_meta.json; actualizar = reemplazar y reiniciar (RNF-MAN-02)
