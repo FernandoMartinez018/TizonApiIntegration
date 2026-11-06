@@ -1,34 +1,34 @@
 package com.lfmm.tizon_integration.repository;
 
 import com.lfmm.tizon_integration.model.ScanSession;
+import com.lfmm.tizon_integration.model.ScanSession.SessionStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
 import java.util.UUID;
-
 
 @Repository
 public interface ScanSessionRepository extends JpaRepository<ScanSession, UUID> {
 
-    List<ScanSession> findByUsernameOrderByStartedAtDesc(String username);
+    /** Filtros opcionales: null = sin filtro. */
+    @Query("SELECT s FROM ScanSession s " +
+            "WHERE (:username IS NULL OR s.username = :username) " +
+            "AND (:status IS NULL OR s.status = :status)")
+    Page<ScanSession> search(@Param("username") String username,
+                             @Param("status") SessionStatus status,
+                             Pageable pageable);
 
-    Optional<ScanSession> findByIdAndUsername(UUID id, String username);
-
-//    List<ScanSession> findByUsernameAndStatusOrderByStartedAtDesc(
-//            String username,
-//            SessionStatus status
-//    );
-
-    @Query("SELECT COUNT(s) FROM ScanSession s " +
-            "WHERE s.username = :username AND s.status = 'COMPLETED'")
-    long countCompletedByUsername(@Param("username") String username);
-
-    @Query("SELECT AVG(s.affectedFrames * 1.0 / NULLIF(s.totalFrames, 0)) " +
-            "FROM ScanSession s " +
-            "WHERE s.username = :username AND s.status = 'COMPLETED'")
-    Double avgAffectionRateByUsername(@Param("username") String username);
+    /** Sesiones ACTIVE sin frames desde antes de {@code cutoff} pasan a CANCELLED. */
+    @Modifying
+    @Query("UPDATE ScanSession s SET s.status = com.lfmm.tizon_integration.model.ScanSession.SessionStatus.CANCELLED, " +
+            "s.endedAt = :now, s.updatedAt = :now " +
+            "WHERE s.status = com.lfmm.tizon_integration.model.ScanSession.SessionStatus.ACTIVE " +
+            "AND COALESCE(s.lastFrameAt, s.startedAt) < :cutoff")
+    int cancelInactive(@Param("cutoff") Instant cutoff, @Param("now") Instant now);
 }

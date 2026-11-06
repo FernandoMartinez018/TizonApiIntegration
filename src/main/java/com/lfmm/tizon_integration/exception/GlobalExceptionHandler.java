@@ -1,100 +1,91 @@
 package com.lfmm.tizon_integration.exception;
 
+import com.lfmm.tizon_integration.dto.ApiError;
+import com.lfmm.tizon_integration.dto.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+/** Todas las respuestas de error usan el cuerpo Error del contrato (code + message en español). */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationErrors(
-            MethodArgumentNotValidException ex) {
-
-        Map<String, String> fieldErrors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String field   = ((FieldError) error).getField();
-            String message = error.getDefaultMessage();
-            fieldErrors.put(field, message);
-        });
-
-        Map<String, Object> body = buildErrorBody(
-                HttpStatus.BAD_REQUEST,
-                "Validación fallida. Revisa los campos enviados.",
-                null
-        );
-        body.put("fields", fieldErrors);
-
-        log.warn("Error de validación: {}", fieldErrors);
-        return ResponseEntity.badRequest().body(body);
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiError> handleApi(ApiException ex) {
+        if (ex.getStatus().is5xxServerError()) log.warn("{}: {}", ex.getCode(), ex.getMessage());
+        return body(ex.getStatus(), ex.getCode(), ex.getMessage(), null);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, Object>> handleBadCredentials(
-            BadCredentialsException ex) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
+        Map<String, String> fields = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            fields.putIfAbsent(toSnakeCase(error.getField()), error.getDefaultMessage());
+        }
+        return body(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_ERROR, "Revisa los datos enviados.", fields);
+    }
 
-        log.warn("Intento de login fallido: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(buildErrorBody(HttpStatus.UNAUTHORIZED,
-                        "Usuario o contraseña incorrectos.", null));
+    @ExceptionHandler({HandlerMethodValidationException.class, MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class})
+    public ResponseEntity<ApiError> handleBadRequest(Exception ex) {
+        return body(HttpStatus.BAD_REQUEST, ErrorCode.VALIDATION_ERROR, "Revisa los datos enviados.", null);
+    }
+
+    @ExceptionHandler({BadCredentialsException.class, DisabledException.class})
+    public ResponseEntity<ApiError> handleBadCredentials(AuthenticationException ex) {
+        // RF-02 CA2: no se indica si falló el usuario, la contraseña o la habilitación.
+        return body(HttpStatus.UNAUTHORIZED, ErrorCode.BAD_CREDENTIALS, "Usuario o contraseña incorrectos.", null);
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<Map<String, Object>> handleAuthentication(
-            AuthenticationException ex) {
-
-        log.warn("Error de autenticación: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(buildErrorBody(HttpStatus.UNAUTHORIZED,
-                        "No autenticado. Proporciona un token JWT válido.", null));
+    public ResponseEntity<ApiError> handleAuthentication(AuthenticationException ex) {
+        return body(HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED, "Debes iniciar sesión para continuar.", null);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
-            IllegalArgumentException ex) {
-
-        log.warn("Error de argumento: {}", ex.getMessage());
-        return ResponseEntity.badRequest()
-                .body(buildErrorBody(HttpStatus.BAD_REQUEST, ex.getMessage(), null));
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(
-            IllegalStateException ex) {
-
-        log.warn("Error de estado: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(buildErrorBody(HttpStatus.CONFLICT, ex.getMessage(), null));
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex) {
+        return body(HttpStatus.FORBIDDEN, ErrorCode.FORBIDDEN, "No tienes permiso para esta acción.", null);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+    public ResponseEntity<ApiError> handleGeneric(Exception ex) {
+        // Excepciones estándar de Spring MVC (404 de ruta, 405, 415…) traen su propio código.
+        if (ex instanceof ErrorResponse er) {
+            HttpStatus status = HttpStatus.valueOf(er.getStatusCode().value());
+            if (status.is4xxClientError()) {
+                return status == HttpStatus.NOT_FOUND
+                        ? body(status, ErrorCode.NOT_FOUND, "El recurso no existe.", null)
+                        : body(status, ErrorCode.VALIDATION_ERROR, "Petición no válida.", null);
+            }
+        }
         log.error("Error no manejado: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(buildErrorBody(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error interno del servidor.", null));
+        return body(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCode.INTERNAL_ERROR,
+                "Ocurrió un error inesperado. Intenta más tarde.", null);
     }
 
-    private Map<String, Object> buildErrorBody(
-            HttpStatus status, String message, String detail) {
+    private static ResponseEntity<ApiError> body(HttpStatus status, ErrorCode code, String message,
+                                                 Map<String, String> fields) {
+        return ResponseEntity.status(status).body(ApiError.of(status, code, message, fields));
+    }
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("status",    status.value());
-        body.put("error",     status.getReasonPhrase());
-        body.put("message",   message);
-        body.put("timestamp", LocalDateTime.now().toString());
-        if (detail != null) body.put("detail", detail);
-        return body;
+    /** Los nombres de campo se devuelven igual que en el JSON (snake_case). */
+    private static String toSnakeCase(String field) {
+        return field.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toLowerCase();
     }
 }
